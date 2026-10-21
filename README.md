@@ -154,8 +154,9 @@ Controlador: [`ProfesorController`](file:///run/media/aitorgallegoo_cr/CORSAIR%2
 | `GET`    | `/profesores`      | Lista todos los profesores registrados | `200 OK`         | `500 Internal Error` |
 | `GET`    | `/profesores/{id}` | Recupera un profesor por su ID         | `200 OK`         | `404 Not Found`      |
 | `POST`   | `/profesores`      | Registra un nuevo profesor             | `201 Created`    | `400 Bad Request`    |
-| `PUT`    | `/profesores/{id}` | Actualiza los datos de un profesor     | `200 OK`         | `404 Not Found`      |
-| `DELETE` | `/profesores/{id}` | Elimina un profesor por su ID          | `204 No Content` | `500 / 404`          |
+| `PUT`    | `/profesores/{id}` | Actualización completa de un profesor  | `200 OK`         | `404 Not Found`      |
+| `PATCH`  | `/profesores/{id}` | Actualización parcial de un profesor   | `200 OK`         | `404 Not Found`      |
+| `DELETE` | `/profesores/{id}` | Elimina un profesor por su ID          | `204 No Content` | `404 Not Found`      |
 
 #### Ejemplo de Payload `POST /profesores`
 ```json

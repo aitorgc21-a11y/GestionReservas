@@ -40,3 +40,29 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
     - Se eliminaron las referencias erróneas a "errores cometidos por la IA" sobre el código base original del usuario.
 - **Información Relevante:**
   - Esta estructura garantiza que cualquier agente o modelo de IA que trabaje en las siguientes fases mantendrá actualizado el archivo `DOC.md` como registro continuo de trabajo.
+
+---
+
+## 📌 Petición 3: Análisis y Creación de Métodos de Actualización en ProfesorController
+
+- **Fecha:** 21 de octubre de 2026
+- **Razón de la petición:**
+  - Quería saber simplemente cómo sería un método para actualizar simplemente un campo en específico.
+- **Resumen de la Petición:**
+  - Analizar el proyecto y `ProfesorController`.
+  - Crear uno o dos métodos (si no es suficiente con uno) para actualizar los datos de un profesor ya existente, respondiendo a si es posible actualizar su ID.
+  - Implementar de la forma más sencilla posible, con comentarios explicativos y siguiendo el formato de respuestas (`ResponseEntity`) ya utilizado en la clase.
+- **Cambios Efectuados:**
+  - **[`ProfesorController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ProfesorController.java):**
+    - Se mantuvo y perfeccionó el método existente `PUT /{id}` (`update`) para la **actualización completa** (reemplazo total de la entidad), asegurando comentarios didácticos y la asignación `profesor.setId(id)`.
+    - Se añadió el método `PATCH /{id}` (`updateParcial`) para la **actualización parcial**: busca la entidad existente en la base de datos con `profesorRepository.findById(id)` y actualiza únicamente los campos no nulos recibidos en el JSON de la petición sin machacar el resto con valores nulos.
+    - Se importó `java.util.Optional` para la gestión limpia de existencia.
+  - **[`README.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/README.md):**
+    - Se añadió el endpoint `PATCH /profesores/{id}` en el catálogo de endpoints implementados.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Imposibilidad e inconveniencia de modificar el `id`:** Se analizó técnicamente por qué el `id` no se puede (ni se debe) actualizar:
+    1. Está anotado con `@GeneratedValue(strategy = GenerationType.IDENTITY)`, lo que delega la clave primaria autoincremental al motor MariaDB.
+    2. Hibernate considera inmutable el identificador de una entidad gestionada; alterar el `@Id` provoca excepciones de persistencia (`HibernateException: identifier of an instance was altered`).
+    3. Rompe la integridad referencial con las reservas asociadas (clave foránea `profesor_id`).
+    4. En la arquitectura REST, la URL `/profesores/{id}` representa la identidad del recurso; por tanto, el método fija forzosamente `profesor.setId(id)`.
+  - **Diferencia entre `PUT` y `PATCH`:** En un examen de 2.º DAM es clave distinguir que `PUT` sustituye todo el recurso (si un campo no viene informado, se guardaría como null o fallaría la restricción `nullable = false`), mientras que `PATCH` comprueba campo por campo con `if (campo != null)` para modificar solo lo deseado. Ambos devuelven `200 OK` con el profesor actualizado o `404 Not Found` si no existe.

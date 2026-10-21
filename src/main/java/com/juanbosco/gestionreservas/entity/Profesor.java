@@ -27,7 +27,7 @@ public class Profesor {
     @Column(length = 40, nullable = false)
     private String surname;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 50, nullable = false, unique = true)
     private String email;
 
     private LocalDate birthDate;
