@@ -97,7 +97,10 @@ GestionReservas/
 │   │   │   │   ├── FranjaHorariaRepository.java # Interfaz JpaRepository para FranjaHoraria
 │   │   │   │   └── ReservaRepository.java        # Interfaz JpaRepository para Reserva
 │   │   │   └── controller/
-│   │   │       └── ProfesorController.java      # Controlador REST para gestión de profesores
+│   │   │       ├── ProfesorController.java      # Controlador REST para gestión de profesores
+│   │   │       ├── AulaController.java          # Controlador REST para gestión de aulas
+│   │   │       ├── FranjaHorariaController.java # Controlador REST para franjas horarias
+│   │   │       └── ReservaController.java        # Controlador REST para gestión de reservas
 │   │   └── resources/
 │   │       └── application.properties           # Parámetros de conexión a MariaDB e Hibernate
 │   └── test/
@@ -147,7 +150,8 @@ La aplicación quedará escuchando en `http://localhost:8080`.
 ## 🔌 5. Catálogo de Endpoints de la API
 
 ### Endpoints Implementados (Estado Actual)
-Controlador: [`ProfesorController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ProfesorController.java)
+
+#### 1. Profesores (`/profesores`) - Controlador: [`ProfesorController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ProfesorController.java)
 
 | Método   | Endpoint           | Descripción                            | Código Éxito     | Códigos Error        |
 |----------|--------------------|----------------------------------------|------------------|----------------------|
@@ -158,33 +162,51 @@ Controlador: [`ProfesorController`](file:///run/media/aitorgallegoo_cr/CORSAIR%2
 | `PATCH`  | `/profesores/{id}` | Actualización parcial de un profesor   | `200 OK`         | `404 Not Found`      |
 | `DELETE` | `/profesores/{id}` | Elimina un profesor por su ID          | `204 No Content` | `404 Not Found`      |
 
-#### Ejemplo de Payload `POST /profesores`
-```json
-{
-  "name": "Carlos",
-  "surname": "García",
-  "email": "carlos.garcia@iesjuanbosco.es",
-  "birthDate": "1985-04-12",
-  "dni": "12345678Z",
-  "telefono": "600123456"
-}
-```
+#### 2. Aulas (`/aulas`) - Controlador: [`AulaController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/AulaController.java)
+
+| Método   | Endpoint           | Descripción                            | Código Éxito     | Códigos Error        |
+|----------|--------------------|----------------------------------------|------------------|----------------------|
+| `GET`    | `/aulas`           | Lista todas las aulas registradas      | `200 OK`         | `500 Internal Error` |
+| `GET`    | `/aulas/{id}`      | Recupera un aula por su ID             | `200 OK`         | `404 Not Found`      |
+| `POST`   | `/aulas`           | Registra una nueva aula                | `201 Created`    | `400 Bad Request`    |
+| `PUT`    | `/aulas/{id}`      | Actualización completa de un aula      | `200 OK`         | `404 Not Found`      |
+| `PATCH`  | `/aulas/{id}`      | Actualización parcial de un aula       | `200 OK`         | `404 Not Found`      |
+| `DELETE` | `/aulas/{id}`      | Elimina un aula por su ID              | `204 No Content` | `404 Not Found`      |
+
+*Nota: Las consultas especiales con parámetros del apartado 2 (`/aulas?ordenadores=...` y `/aulas?capacidad=...`) quedan pendientes de implementación manual por parte del alumno.*
+
+#### 3. Franjas Horarias (`/franjas-horarias` / `/franjas`) - Controlador: [`FranjaHorariaController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/FranjaHorariaController.java)
+
+| Método   | Endpoint                   | Descripción                                   | Código Éxito     | Códigos Error        |
+|----------|----------------------------|-----------------------------------------------|------------------|----------------------|
+| `GET`    | `/franjas-horarias`        | Lista todas las franjas horarias registradas  | `200 OK`         | `500 Internal Error` |
+| `GET`    | `/franjas-horarias/{id}`   | Recupera una franja horaria por su ID         | `200 OK`         | `404 Not Found`      |
+| `POST`   | `/franjas-horarias`        | Registra una nueva franja horaria             | `201 Created`    | `400 Bad Request`    |
+| `PUT`    | `/franjas-horarias/{id}`   | Actualización completa de una franja horaria  | `200 OK`         | `404 Not Found`      |
+| `PATCH`  | `/franjas-horarias/{id}`   | Actualización parcial de una franja horaria   | `200 OK`         | `404 Not Found`      |
+| `DELETE` | `/franjas-horarias/{id}`   | Elimina una franja horaria por su ID          | `204 No Content` | `404 Not Found`      |
+
+#### 4. Reservas (`/reservas`) - Controlador: [`ReservaController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ReservaController.java)
+
+| Método   | Endpoint           | Descripción                            | Código Éxito     | Códigos Error        |
+|----------|--------------------|----------------------------------------|------------------|----------------------|
+| `GET`    | `/reservas`        | Lista todas las reservas registradas   | `200 OK`         | `500 Internal Error` |
+| `GET`    | `/reservas/{id}`   | Recupera una reserva por su ID         | `200 OK`         | `404 Not Found`      |
+| `POST`   | `/reservas`        | Registra una nueva reserva             | `201 Created`    | `400 Bad Request`    |
+| `PUT`    | `/reservas/{id}`   | Actualización completa de una reserva  | `200 OK`         | `404 Not Found`      |
+| `PATCH`  | `/reservas/{id}`   | Actualización parcial de una reserva   | `200 OK`         | `404 Not Found`      |
+| `DELETE` | `/reservas/{id}`   | Elimina una reserva por su ID          | `204 No Content` | `404 Not Found`      |
 
 ---
 
-### Endpoints Pendientes de Implementación (Especificación del Enunciado)
+### Requisitos y Lógicas Pendientes (Especificación del Enunciado)
 
-1. **Aulas (`/aulas`):**
-   - CRUD completo: `GET /aulas`, `GET /aulas/{id}`, `POST /aulas`, `PUT /aulas/{id}`, `DELETE /aulas/{id}`.
+1. **Aulas (Apartado 2 del Enunciado):**
    - Filtro por ordenadores: `GET /aulas?ordenadores=true`.
    - Filtro por capacidad mínima: `GET /aulas?capacidad=20`.
 
-2. **Franjas Horarias (`/franjas` o `/franjas-horarias`):**
-   - CRUD completo para gestionar las horas de reserva.
-
-3. **Reservas (`/reservas`):**
-   - CRUD completo.
-   - Generación automática de `insertionDate` con la fecha y hora del sistema al persistir.
+2. **Reservas (Apartado 3 del Enunciado):**
+   - Generación automática de `insertionDate` mediante `@PrePersist` en la entidad `Reserva`.
    - Validación de solapamiento: impedir reservar si el aula y la franja horaria ya están reservadas en esa fecha.
    - Validación temporal: impedir reservas con fecha anterior a la fecha actual (`LocalDate.now()`).
 
@@ -197,12 +219,11 @@ Controlador: [`ProfesorController`](file:///run/media/aitorgallegoo_cr/CORSAIR%2
 - [x] Modelo entidad-relación reflejado en entidades JPA (`Profesor`, `Aula`, `FranjaHoraria`, `Reserva`).
 - [x] Repositorios Spring Data JPA creados.
 - [x] Configuración de CORS habilitada (`CorsConfig`).
-- [x] Primer controlador REST implementado (`ProfesorController`).
+- [x] Controladores REST base implementados (`ProfesorController`, `AulaController`, `FranjaHorariaController`, `ReservaController`).
 - [ ] Refactorización y corrección de validación en `ProfesorController.create`.
 - [ ] Escapado del atributo `from` en `FranjaHoraria` (`hora_inicio`).
-- [ ] Implementación de `AulaController` con endpoints de filtrado.
-- [ ] Implementación de `FranjaHorariaController`.
-- [ ] Implementación de `ReservaController` con validaciones de negocio.
+- [ ] Implementación de las consultas con parámetros en `AulaController` (Apartado 2).
+- [ ] Implementación de las validaciones de negocio en `ReservaController` (Apartado 3).
 - [ ] Creación del frontend estático en `/frontend` (HTML, CSS, JS vainilla).
 - [ ] Grabación de vídeo explicativo de la entrega (5 a 10 min) demostrando Postman y frontend.
 

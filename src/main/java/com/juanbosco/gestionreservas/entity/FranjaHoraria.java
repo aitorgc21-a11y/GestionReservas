@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -22,10 +21,10 @@ public class FranjaHoraria {
     private Long id;
 
     @Column(nullable = false)
-    private LocalTime from;
+    private LocalTime desde;
 
     @Column(nullable = false)
-    private LocalTime to;
+    private LocalTime hasta;
 
     // Una franja horaria puede tener varias reservas (en distintas aulas)
     @ManyToMany(cascade = CascadeType.PERSIST)

@@ -66,3 +66,52 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
     3. Rompe la integridad referencial con las reservas asociadas (clave foránea `profesor_id`).
     4. En la arquitectura REST, la URL `/profesores/{id}` representa la identidad del recurso; por tanto, el método fija forzosamente `profesor.setId(id)`.
   - **Diferencia entre `PUT` y `PATCH`:** En un examen de 2.º DAM es clave distinguir que `PUT` sustituye todo el recurso (si un campo no viene informado, se guardaría como null o fallaría la restricción `nullable = false`), mientras que `PATCH` comprueba campo por campo con `if (campo != null)` para modificar solo lo deseado. Ambos devuelven `200 OK` con el profesor actualizado o `404 Not Found` si no existe.
+
+---
+
+## 📌 Petición 4: Creación de Controladores REST para Aula, FranjaHoraria y Reserva
+
+- **Fecha:** 21 de octubre de 2026
+- **Razón de la petición:**
+  - El alumno solicita delegar en la IA la creación de los controladores de las tres entidades restantes (`Aula`, `FranjaHoraria` y `Reserva`) dado que se trata de una tarea repetitiva y mecánica cuya estructura y funcionamiento ya domina completamente (tras haber desarrollado manualmente `ProfesorController`).
+- **Resumen de la Petición:**
+  - Analizar el estado actual del proyecto.
+  - Generar los controladores REST para `Aula`, `FranjaHoraria` y `Reserva`.
+  - Mantener con total exactitud la misma estructura, nombres de métodos y lógica de respuestas (`ResponseEntity`, `GET`, `POST`, `PUT`, `PATCH`, `DELETE`) de `ProfesorController`, adaptados a los atributos de cada entidad.
+  - **Exclusión explícita:** No implementar ni añadir lo estipulado en el **apartado 2 del enunciado** (filtros de aulas por `ordenadores` y `capacidad` mediante `@RequestParam`), ya que el alumno lo desarrollará manualmente por su cuenta sin asistencia de IA.
+  - Registrar en `DOC.md` el motivo explícito de la delegación conforme a lo realizado en la Petición 3.
+- **Cambios Efectuados:**
+  - **[`AulaController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/AulaController.java):**
+    - Creado en `com.juanbosco.gestionreservas.controller` con `@RequestMapping("/aulas")`.
+    - Endpoints implementados:
+      - `GET /aulas` (`aulas()`): Retorna lista completa (`200 OK`). Se dejó exento de parámetros de filtro a petición del usuario.
+      - `GET /aulas/{id}` (`findById`): Retorna aula (`200 OK`) o `404 Not Found`.
+      - `POST /aulas` (`create`): Valida que `id == null` y `name != null`, retornando `201 Created` con el aula guardada o `400 Bad Request`.
+      - `PUT /aulas/{id}` (`update`): Actualización completa, asignando el id de la URL (`200 OK` o `404 Not Found`).
+      - `PATCH /aulas/{id}` (`updateParcial`): Actualización de atributos enviados sin sobreescribir el resto con nulos.
+      - `DELETE /aulas/{id}` (`deleteById`): Eliminación con verificación previa de existencia (`204 No Content` o `404 Not Found`).
+  - **[`FranjaHorariaController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/FranjaHorariaController.java):**
+    - Creado con `@RequestMapping({"/franjas-horarias", "/franjas"})` para dar soporte a ambas variantes de ruta.
+    - Endpoints implementados:
+      - `GET /franjas-horarias` (`franjasHorarias()`): Lista todas las franjas horarias (`200 OK`).
+      - `GET /franjas-horarias/{id}` (`findById`): Consulta por ID (`200 OK` o `404 Not Found`).
+      - `POST /franjas-horarias` (`create`): Valida `id == null` y campos no nulos `from` y `to` (`201 Created` o `400 Bad Request`).
+      - `PUT /franjas-horarias/{id}` (`update`): Modificación total fijando el ID (`200 OK` o `404 Not Found`).
+      - `PATCH /franjas-horarias/{id}` (`updateParcial`): Modificación selectiva de `from` y/o `to` (`200 OK` o `404 Not Found`).
+      - `DELETE /franjas-horarias/{id}` (`deleteById`): Eliminación (`204 No Content` o `404 Not Found`).
+  - **[`ReservaController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ReservaController.java):**
+    - Creado con `@RequestMapping("/reservas")`.
+    - Endpoints implementados:
+      - `GET /reservas` (`reservas()`): Lista de reservas registradas (`200 OK`).
+      - `GET /reservas/{id}` (`findById`): Consulta por ID (`200 OK` o `404 Not Found`).
+      - `POST /reservas` (`create`): Valida `id == null`, `date != null` y autocompleta `insertionDate = LocalDateTime.now()` en caso de venir vacía (`201 Created` o `400 Bad Request`).
+      - `PUT /reservas/{id}` (`update`): Modificación total asegurando `id` y preservando o inicializando `insertionDate` (`200 OK` o `404 Not Found`).
+      - `PATCH /reservas/{id}` (`updateParcial`): Modificación selectiva de `date`, `profesor`, `aula`, `franjasHorarias` o `insertionDate` (`200 OK` o `404 Not Found`).
+      - `DELETE /reservas/{id}` (`deleteById`): Eliminación (`204 No Content` o `404 Not Found`).
+  - **[`README.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/README.md):**
+    - Actualizado el árbol de archivos con los 3 nuevos controladores.
+    - Actualizada la tabla de endpoints implementados con las rutas de Aulas, Franjas Horarias y Reservas.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Apartado 2 excluido intacto:** No se implementó ningún filtro por query params (`ordenadores` ni `capacidad`) en `AulaController`. De este modo, el alumno tiene la base limpia para aplicar su propia lógica de consultas especiales y anotaciones `@RequestParam`.
+  - **Consistencia metodológica:** Los tres controladores siguen idéntico patrón de inyección por constructor, estructura de respuestas `ResponseEntity`, manejo funcional con `.map().orElseGet()`, comprobación de ID en creación y actualización parcial campo a campo con `PATCH`.
+  - **Manejo de `insertionDate` en Reservas:** Para garantizar que `POST /reservas` no falle por restricción de columna `nullable = false` en la base de datos mientras el alumno implementa `@PrePersist` en la entidad `Reserva`, el controlador asigna `LocalDateTime.now()` por defecto si el payload no incluye `insertionDate`.

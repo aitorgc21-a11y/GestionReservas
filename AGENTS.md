@@ -137,8 +137,33 @@ A continuación se detalla la función, responsabilidades y contenido de cada un
     - `GET /profesores` -> Devuelve lista completa (`200 OK`).
     - `GET /profesores/{id}` -> Devuelve profesor si existe (`200 OK`) o `404 Not Found`.
     - `POST /profesores` -> Crea un nuevo profesor con validación de campos obligatorios (`201 Created` o `400 Bad Request`).
-    - `PUT /profesores/{id}` -> Modifica un profesor (`200 OK` o `404 Not Found`).
-    - `DELETE /profesores/{id}` -> Elimina un profesor (`204 No Content`).
+    - `PUT /profesores/{id}` -> Modifica un profesor por completo (`200 OK` o `404 Not Found`).
+    - `PATCH /profesores/{id}` -> Modificación parcial de campos no nulos (`200 OK` o `404 Not Found`).
+    - `DELETE /profesores/{id}` -> Elimina un profesor (`204 No Content` o `404 Not Found`).
+- **[`AulaController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/AulaController.java):**
+  - Endpoints implementados:
+    - `GET /aulas` -> Devuelve lista completa de aulas (`200 OK`).
+    - `GET /aulas/{id}` -> Devuelve aula si existe (`200 OK`) o `404 Not Found`.
+    - `POST /aulas` -> Crea un aula validando `id == null` y `name != null` (`201 Created` o `400 Bad Request`).
+    - `PUT /aulas/{id}` -> Modificación total (`200 OK` o `404 Not Found`).
+    - `PATCH /aulas/{id}` -> Modificación parcial (`200 OK` o `404 Not Found`).
+    - `DELETE /aulas/{id}` -> Elimina un aula (`204 No Content` o `404 Not Found`).
+- **[`FranjaHorariaController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/FranjaHorariaController.java):**
+  - Endpoints implementados (mapeado en `/franjas-horarias` y `/franjas`):
+    - `GET /franjas-horarias` -> Devuelve lista completa (`200 OK`).
+    - `GET /franjas-horarias/{id}` -> Devuelve franja si existe (`200 OK`) o `404 Not Found`.
+    - `POST /franjas-horarias` -> Crea franja validando `from` y `to` (`201 Created` o `400 Bad Request`).
+    - `PUT /franjas-horarias/{id}` -> Modificación total (`200 OK` o `404 Not Found`).
+    - `PATCH /franjas-horarias/{id}` -> Modificación parcial (`200 OK` o `404 Not Found`).
+    - `DELETE /franjas-horarias/{id}` -> Elimina una franja (`204 No Content` o `404 Not Found`).
+- **[`ReservaController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ReservaController.java):**
+  - Endpoints implementados:
+    - `GET /reservas` -> Devuelve lista completa de reservas (`200 OK`).
+    - `GET /reservas/{id}` -> Devuelve reserva si existe (`200 OK`) o `404 Not Found`.
+    - `POST /reservas` -> Crea reserva validando `date != null` y autocompletando `insertionDate` si es nula (`201 Created` o `400 Bad Request`).
+    - `PUT /reservas/{id}` -> Modificación total (`200 OK` o `404 Not Found`).
+    - `PATCH /reservas/{id}` -> Modificación parcial (`200 OK` o `404 Not Found`).
+    - `DELETE /reservas/{id}` -> Elimina una reserva (`204 No Content` o `404 Not Found`).
 
 ---
 
