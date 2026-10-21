@@ -1,0 +1,34 @@
+package com.juanbosco.gestionreservas.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
+@Entity
+@Table
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class FranjaHoraria {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private LocalTime from;
+
+    @Column(nullable = false)
+    private LocalTime to;
+
+    // Una franja horaria puede tener varias reservas (en distintas aulas)
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    private List<Reserva> reservas;
+
+}

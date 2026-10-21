@@ -1,0 +1,40 @@
+package com.juanbosco.gestionreservas.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Entity
+@Data
+@Table
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Aula {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(length = 40)
+    private String name;
+
+    @Column(nullable = false)
+    private boolean ordenadores;
+
+    @Column(nullable = false)
+    private int capacity;
+
+    private int floor;
+
+    @Column(length = 100)
+    private String description;
+
+    // Un aula puede tener muchas reservas
+    @OneToMany(cascade = CascadeType.PERSIST)
+    private List<Reserva> reservas;
+
+}
