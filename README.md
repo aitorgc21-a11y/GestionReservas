@@ -164,16 +164,19 @@ La aplicación quedará escuchando en `http://localhost:8080`.
 
 #### 2. Aulas (`/aulas`) - Controlador: [`AulaController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/AulaController.java)
 
-| Método   | Endpoint           | Descripción                            | Código Éxito     | Códigos Error        |
-|----------|--------------------|----------------------------------------|------------------|----------------------|
-| `GET`    | `/aulas`           | Lista todas las aulas registradas      | `200 OK`         | `500 Internal Error` |
-| `GET`    | `/aulas/{id}`      | Recupera un aula por su ID             | `200 OK`         | `404 Not Found`      |
-| `POST`   | `/aulas`           | Registra una nueva aula                | `201 Created`    | `400 Bad Request`    |
-| `PUT`    | `/aulas/{id}`      | Actualización completa de un aula      | `200 OK`         | `404 Not Found`      |
-| `PATCH`  | `/aulas/{id}`      | Actualización parcial de un aula       | `200 OK`         | `404 Not Found`      |
-| `DELETE` | `/aulas/{id}`      | Elimina un aula por su ID              | `204 No Content` | `404 Not Found`      |
+| Método   | Endpoint           | Descripción                                                                                 | Código Éxito     | Códigos Error        |
+|----------|--------------------|---------------------------------------------------------------------------------------------|------------------|----------------------|
+| `GET`    | `/aulas`           | Lista todas las aulas (soporta filtros: `?ordenadores=true`, `?capacidad=20` o combinados) | `200 OK`         | `500 Internal Error` |
+| `GET`    | `/aulas/{id}`      | Recupera un aula por su ID                                                                  | `200 OK`         | `404 Not Found`      |
+| `POST`   | `/aulas`           | Registra una nueva aula                                                                     | `201 Created`    | `400 Bad Request`    |
+| `PUT`    | `/aulas/{id}`      | Actualización completa de un aula                                                           | `200 OK`         | `404 Not Found`      |
+| `PATCH`  | `/aulas/{id}`      | Actualización parcial de un aula                                                            | `200 OK`         | `404 Not Found`      |
+| `DELETE` | `/aulas/{id}`      | Elimina un aula por su ID                                                                   | `204 No Content` | `404 Not Found`      |
 
-*Nota: Las consultas especiales con parámetros del apartado 2 (`/aulas?ordenadores=...` y `/aulas?capacidad=...`) quedan pendientes de implementación manual por parte del alumno.*
+*Parámetros de consulta para `GET /aulas`:*
+- `ordenadores` (boolean, opcional): `/aulas?ordenadores=true` (devuelve aulas con o sin ordenadores).
+- `capacidad` o `capacity` (integer, opcional): `/aulas?capacidad=20` (devuelve aulas con capacidad estrictamente superior al valor indicado).
+- Combinación: `/aulas?ordenadores=true&capacidad=20`.
 
 #### 3. Franjas Horarias (`/franjas-horarias` / `/franjas`) - Controlador: [`FranjaHorariaController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/FranjaHorariaController.java)
 

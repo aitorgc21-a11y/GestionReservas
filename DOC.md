@@ -115,3 +115,28 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
   - **Apartado 2 excluido intacto:** No se implementó ningún filtro por query params (`ordenadores` ni `capacidad`) en `AulaController`. De este modo, el alumno tiene la base limpia para aplicar su propia lógica de consultas especiales y anotaciones `@RequestParam`.
   - **Consistencia metodológica:** Los tres controladores siguen idéntico patrón de inyección por constructor, estructura de respuestas `ResponseEntity`, manejo funcional con `.map().orElseGet()`, comprobación de ID en creación y actualización parcial campo a campo con `PATCH`.
   - **Manejo de `insertionDate` en Reservas:** Para garantizar que `POST /reservas` no falle por restricción de columna `nullable = false` en la base de datos mientras el alumno implementa `@PrePersist` en la entidad `Reserva`, el controlador asigna `LocalDateTime.now()` por defecto si el payload no incluye `insertionDate`.
+
+---
+
+## 📌 Petición 5: Verificación y Optimización de Consultas Especiales en Aula (Apartado 2)
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - Analizar el proyecto y los cambios no commiteados realizados manualmente por el alumno en `Aula.java`, `AulaRepository.java` y `AulaController.java`.
+  - Verificar si la documentación de los endpoints en comentarios y la implementación del método `findAll` con parámetros de consulta (`@RequestParam`) son correctas.
+  - Explicar aciertos, posibles fallos y aplicar los ajustes necesarios manteniendo el enfoque y estilo del alumno.
+- **Cambios Efectuados:**
+  - **[`AulaController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/AulaController.java):**
+    - Se homogeneizó el tipo de retorno a `ResponseEntity<List<Aula>>` devolviendo `ResponseEntity.ok(...)` para mantener la consistencia con el resto del proyecto y cumplir formalmente con la especificación 1.
+    - Se añadió soporte dual tanto para el parámetro `capacidad` (indicado textualmente en el enunciado oficial de la práctica) como para `capacity` (nombre en inglés del atributo en la entidad), asignando `Integer cap = (capacidad != null) ? capacidad : capacity;`.
+    - Se actualizaron los comentarios explicativos superiores del endpoint reflejando ambas posibilidades de consulta.
+  - **[`README.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/README.md):**
+    - Se actualizó la tabla de endpoints y la sección de Aulas, documentando formalmente los parámetros de consulta `?ordenadores=true`, `?capacidad=20` y su uso combinado.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Validación del trabajo manual del alumno:**
+    1. **Entidad (`Aula.java`):** El cambio del tipo de dato `int` a `Integer` en `capacity` es una excelente decisión técnica, ya que permite valores nulos en Hibernate y en peticiones parciales.
+    2. **Repositorio (`AulaRepository.java`):** La definición de `findByOrdenadores(Boolean)`, `findByCapacityGreaterThan(Integer)` y `findByOrdenadoresAndCapacityGreaterThan(Boolean, Integer)` es 100% correcta y sigue a la perfección la convención de *Derived Query Methods* de Spring Data JPA.
+    3. **Lógica condicional:** La estructura de bifurcaciones `if` para filtrar según qué parámetros vengan informados era impecable.
+  - **Detección de discrepancia de nomenclatura:** El enunciado solicita explícitamente `?capacidad=20` (en español), mientras que en Java el atributo se llama `capacity`. Si un evaluador lanza peticiones con `?capacidad=20`, Spring no habría detectado el parámetro si solo se declaraba `Integer capacity`. Con el soporte dual se garantiza compatibilidad total tanto con las pruebas automáticas o manuales del profesor como con llamadas usando el nombre del atributo.
+  - **Aclaración sobre la errata del enunciado:** En el enunciado se menciona como ejemplo `/aulas/21?ordenadores=true` y `/aulas/21?capacidad=20`. Se constata que el `/21` se trata de un desliz tipográfico del redactor del enunciado, ya que consultar una colección de aulas mediante filtros sobre un recurso individual carece de sentido semántico en REST. La implementación sobre `/aulas` con `@RequestParam` realizada por el alumno es la correcta según los estándares de la arquitectura REST.
+

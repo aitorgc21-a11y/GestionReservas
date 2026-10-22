@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface AulaRepository extends JpaRepository<Aula, Long> {
     List<Aula> findByOrdenadores(Boolean ordenadores);
+    List<Aula> findByCapacityGreaterThan(Integer capacity);
+    List<Aula> findByOrdenadoresAndCapacityGreaterThan(Boolean ordenadores, Integer capacity);
 }

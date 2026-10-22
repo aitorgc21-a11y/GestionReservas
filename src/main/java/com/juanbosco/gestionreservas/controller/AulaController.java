@@ -21,16 +21,36 @@ public class AulaController {
         this.aulaRepository = aulaRepository;
     }
 
-    // GET http://localhost:8080/aulas -> Se puede poner aulas?ordenadores=true para solo mostrar las que tienen ordenadores
+    // GET http://localhost:8080/aulas
+    // GET http://localhost:8080/aulas?ordenadores=true
+    // GET http://localhost:8080/aulas?capacidad=20 (o ?capacity=20)
+    // GET http://localhost:8080/aulas?ordenadores=true&capacidad=20
     @GetMapping
-    public List<Aula> findAll(@RequestParam(required = false) Boolean ordenadores) {
-        // Si se puso la URL sin el parámetro de consulta
-        if (ordenadores != null) {
-            return aulaRepository.findByOrdenadores(ordenadores);
+    public ResponseEntity<List<Aula>> findAll(
+            @RequestParam(required = false) Boolean ordenadores,
+            @RequestParam(required = false) Integer capacidad,
+            @RequestParam(required = false) Integer capacity
+    ) {
+        // Soporte tanto para 'capacidad' (como pide el enunciado) como para 'capacity' (en inglés)
+        Integer cap = (capacidad != null) ? capacidad : capacity;
+
+        // Si se puso la URL sin parámetro de consulta, se muestran todas las aulas
+        if (ordenadores == null && cap == null) {
+            return ResponseEntity.ok(aulaRepository.findAll());
         }
 
-        // Si puso el parámetro de consulta de ordenadores
-        return aulaRepository.findAll();
+        // Si se puso el parámetro de consulta de ordenadores únicamente
+        if (ordenadores != null && cap == null) {
+            return ResponseEntity.ok(aulaRepository.findByOrdenadores(ordenadores));
+        }
+
+        // Si se puso el parámetro de consulta de capacidad únicamente
+        if (ordenadores == null) {
+            return ResponseEntity.ok(aulaRepository.findByCapacityGreaterThan(cap));
+        }
+
+        // Si se ha llegado hasta aquí, es que se han puesto los dos parámetros de consulta
+        return ResponseEntity.ok(aulaRepository.findByOrdenadoresAndCapacityGreaterThan(ordenadores, cap));
     }
 
     // GET http://localhost:8080/aulas/{id}

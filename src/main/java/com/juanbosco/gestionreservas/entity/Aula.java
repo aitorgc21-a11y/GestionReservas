@@ -26,7 +26,7 @@ public class Aula {
     private Boolean ordenadores;
 
     @Column(nullable = false)
-    private int capacity;
+    private Integer capacity;
 
     private Integer floor;
 
