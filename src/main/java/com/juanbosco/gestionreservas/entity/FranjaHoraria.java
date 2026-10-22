@@ -1,5 +1,6 @@
 package com.juanbosco.gestionreservas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class FranjaHoraria {
 
     // Una franja horaria puede tener varias reservas (en distintas aulas)
     @ManyToMany(cascade = CascadeType.PERSIST)
+    @JsonIgnoreProperties("franjasHorarias")
     private List<Reserva> reservas;
 
 }

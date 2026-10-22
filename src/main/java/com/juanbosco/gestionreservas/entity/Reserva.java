@@ -1,5 +1,6 @@
 package com.juanbosco.gestionreservas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,14 +30,17 @@ public class Reserva {
 
     // Varias Reservas pueden ser hechas por un profesor
     @ManyToOne(cascade = CascadeType.PERSIST)
+    @JsonIgnoreProperties("reserva")
     private Profesor profesor;
 
     // Varias reservas pueden ser de un Aula
     @ManyToOne(cascade = CascadeType.PERSIST)
+    @JsonIgnoreProperties("reservas")
     private Aula aula;
 
     // Varias reservas pueden tener varias franjas horarias
     @ManyToMany(cascade = CascadeType.PERSIST)
+    @JsonIgnoreProperties("reservas")
     private List<FranjaHoraria> franjasHorarias;
 
     // Asignación automática de fecha y hora de inserción en la propia entidad (requisito del enunciado)

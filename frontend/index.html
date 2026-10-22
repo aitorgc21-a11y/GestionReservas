@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Reservas - IES San Juan Bosco</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Header principal -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="logo-icon">🏫</div>
+        <div>
+          <h1>Gestión de Reservas</h1>
+          <p class="subtitle">Acceso a Datos · 2.º DAM · API REST Spring Boot</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="api-status" id="apiStatusBadge">
+          <span class="status-dot"></span>
+          <span id="apiStatusText">Comprobando API...</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnConfigApi" title="Configurar URL de la API">
+          ⚙️ Servidor: <span id="currentApiUrlDisplay">localhost:8080</span>
+        </button>
+        <button class="btn btn-outline btn-sm" id="btnSeedData" title="Insertar datos iniciales si la BBDD está vacía">
+          ⚡ Cargar Datos Demo
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegación por pestañas -->
+    <nav class="nav-tabs" aria-label="Navegación principal">
+      <div class="tabs-container">
+        <button class="tab-btn active" data-tab="tab-reservas">
+          📅 Reservas <span class="badge" id="badgeCountReservas">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-aulas">
+          🏢 Aulas y Filtros (Ap. 2) <span class="badge" id="badgeCountAulas">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-profesores">
+          👨‍🏫 Profesores <span class="badge" id="badgeCountProfesores">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-franjas">
+          ⏰ Franjas Horarias <span class="badge" id="badgeCountFranjas">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-inspector">
+          📡 Inspector API <span class="badge badge-accent" id="badgeCountLogs">0</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Contenedor principal de contenidos -->
+  <main class="main-content">
+
+    <!-- ================= PESTAÑA 1: RESERVAS ================= -->
+    <section id="tab-reservas" class="tab-pane active">
+      <div class="section-toolbar">
+        <div>
+          <h2>Gestión de Reservas de Aulas</h2>
+          <p class="section-desc">
+            Visualización y creación de reservas según las reglas del Apartado 3 (disponibilidad y fecha futura).
+          </p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-primary" id="btnOpenModalReserva">
+            ➕ Nueva Reserva
+          </button>
+          <button class="btn btn-secondary" id="btnRefreshReservas" title="Recargar lista">
+            🔄 Recargar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjeta informativa de reglas de negocio -->
+      <aside class="info-card">
+        <div class="info-icon">💡</div>
+        <div class="info-content">
+          <strong>Validaciones de negocio aplicadas en backend (Apartado 3):</strong>
+          <ul>
+            <li><strong>Disponibilidad de franja:</strong> Si el aula ya está reservada en esa fecha y franja, el backend responde con <code>400 Bad Request</code>.</li>
+            <li><strong>Fecha futura:</strong> La fecha de la reserva no puede ser anterior a hoy (<code>!date.isBefore(LocalDate.now())</code>).</li>
+            <li><strong>Auditoría automática:</strong> El campo <code>insertionDate</code> se autocompleta con <code>LocalDateTime.now()</code> en JPA mediante <code>@PrePersist</code>.</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Tabla / Listado de reservas -->
+      <div class="card table-card">
+        <div class="table-responsive">
+          <table class="data-table" id="tablaReservas">
+            <thead>
+              <tr>
+                <th style="width: 70px;">ID</th>
+                <th>Fecha Reserva</th>
+                <th>Aula</th>
+                <th>Profesor</th>
+                <th>Franjas Horarias</th>
+                <th>Fecha Registro (@PrePersist)</th>
+                <th style="width: 110px; text-align: center;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyReservas">
+              <tr>
+                <td colspan="7" class="loading-state">
+                  <div class="spinner"></div> Cargando reservas...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PESTAÑA 2: AULAS Y FILTROS (APARTADO 2) ================= -->
+    <section id="tab-aulas" class="tab-pane">
+      <div class="section-toolbar">
+        <div>
+          <h2>Catálogo de Aulas</h2>
+          <p class="section-desc">
+            Prueba interactiva de las consultas especiales del <strong>Apartado 2</strong> mediante <code>@RequestParam</code>.
+          </p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-primary" id="btnOpenModalAula">
+            ➕ Añadir Aula
+          </button>
+          <button class="btn btn-secondary" id="btnRefreshAulas">
+            🔄 Recargar
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel de Filtros Interactivos (Apartado 2) -->
+      <div class="card filter-card">
+        <div class="filter-header">
+          <h3>🔍 Filtros de Consulta Especial (Apartado 2)</h3>
+          <span class="pill-label">Spring Data JPA Derived Queries</span>
+        </div>
+        <form id="formFiltroAulas" class="filter-form">
+          <div class="filter-group">
+            <label class="toggle-control">
+              <input type="checkbox" id="filtroOrdenadores">
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Solo con ordenadores (<code>?ordenadores=true</code>)</span>
+            </label>
+          </div>
+
+          <div class="filter-group">
+            <label for="filtroCapacidad">Capacidad mínima de alumnos (<code>?capacidad=X</code>):</label>
+            <div class="input-with-action">
+              <input type="number" id="filtroCapacidad" min="0" max="200" placeholder="Ej: 20">
+              <span class="input-suffix">puestos</span>
+            </div>
+          </div>
+
+          <div class="filter-buttons">
+            <button type="submit" class="btn btn-primary">
+              🔎 Aplicar Filtros
+            </button>
+            <button type="button" class="btn btn-outline" id="btnLimpiarFiltroAulas">
+              ✕ Limpiar
+            </button>
+          </div>
+        </form>
+
+        <div class="query-preview">
+          <span class="preview-tag">URL REST generada:</span>
+          <code id="queryUrlPreview">GET http://localhost:8080/aulas</code>
+        </div>
+      </div>
+
+      <!-- Grid de Aulas -->
+      <div class="grid-cards" id="gridAulas">
+        <div class="loading-state">
+          <div class="spinner"></div> Cargando aulas...
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PESTAÑA 3: PROFESORES ================= -->
+    <section id="tab-profesores" class="tab-pane">
+      <div class="section-toolbar">
+        <div>
+          <h2>Listado de Profesores</h2>
+          <p class="section-desc">
+            Cuerpo docente registrado para realizar reservas en el centro.
+          </p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-primary" id="btnOpenModalProfesor">
+            ➕ Añadir Profesor
+          </button>
+          <button class="btn btn-secondary" id="btnRefreshProfesores">
+            🔄 Recargar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de profesores -->
+      <div class="card table-card">
+        <div class="table-responsive">
+          <table class="data-table" id="tablaProfesores">
+            <thead>
+              <tr>
+                <th style="width: 70px;">ID</th>
+                <th>Nombre y Apellidos</th>
+                <th>DNI</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Fecha Nacimiento</th>
+                <th style="width: 100px; text-align: center;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyProfesores">
+              <tr>
+                <td colspan="7" class="loading-state">
+                  <div class="spinner"></div> Cargando profesores...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PESTAÑA 4: FRANJAS HORARIAS ================= -->
+    <section id="tab-franjas" class="tab-pane">
+      <div class="section-toolbar">
+        <div>
+          <h2>Franjas Horarias del Centro</h2>
+          <p class="section-desc">
+            Intervalos lectivos disponibles para reservar aulas por periodos.
+          </p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-primary" id="btnOpenModalFranja">
+            ➕ Añadir Franja
+          </button>
+          <button class="btn btn-secondary" id="btnRefreshFranjas">
+            🔄 Recargar
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid de franjas -->
+      <div class="grid-cards" id="gridFranjas">
+        <div class="loading-state">
+          <div class="spinner"></div> Cargando franjas...
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PESTAÑA 5: INSPECTOR DE API REST ================= -->
+    <section id="tab-inspector" class="tab-pane">
+      <div class="section-toolbar">
+        <div>
+          <h2>Inspector de Peticiones y Respuestas HTTP (En Vivo)</h2>
+          <p class="section-desc">
+            Monitoriza en directo las llamadas entre el frontend y el backend de Spring Boot con explicaciones técnicas.
+          </p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-outline" id="btnClearLogs">
+            🗑️ Limpiar Historial
+          </button>
+        </div>
+      </div>
+
+      <div class="inspector-layout">
+        <div class="inspector-sidebar card">
+          <div class="inspector-header">
+            <h3>Historial de Tráfico HTTP</h3>
+            <span class="count-tag" id="logCounter">0 llamadas</span>
+          </div>
+          <div class="log-list" id="logList">
+            <div class="empty-state">No hay peticiones registradas aún. Interactúa con la app para inspeccionar el tráfico.</div>
+          </div>
+        </div>
+
+        <div class="inspector-detail card" id="logDetailCard">
+          <div class="inspector-detail-header">
+            <h3>Detalle de la Petición</h3>
+            <span class="status-badge" id="detailStatusBadge">--</span>
+          </div>
+          <div id="logDetailContent" class="detail-content">
+            <div class="empty-state">Selecciona una petición del panel izquierdo para ver cabeceras, payload, respuesta y justificación técnica.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= MODALES ================= -->
+
+  <!-- Modal Crear Reserva -->
+  <div class="modal-overlay" id="modalReserva">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>📅 Nueva Reserva de Aula</h3>
+        <button class="modal-close" data-close="modalReserva">&times;</button>
+      </div>
+      <form id="formCrearReserva" class="modal-body">
+        <div class="form-group">
+          <label for="reservaProfesor">Profesor solicitante: *</label>
+          <select id="reservaProfesor" required class="form-control">
+            <option value="">-- Seleccionar Profesor --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="reservaAula">Aula a reservar: *</label>
+          <select id="reservaAula" required class="form-control">
+            <option value="">-- Seleccionar Aula --</option>
+          </select>
+          <small class="form-hint" id="aulaInfoPreview"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="reservaFecha">Fecha de la reserva: *</label>
+          <input type="date" id="reservaFecha" required class="form-control">
+          <small class="form-hint">Regla: No puede ser anterior a la fecha de hoy.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Franjas Horarias (selecciona una o varias): *</label>
+          <div id="reservaFranjasContainer" class="checkbox-grid">
+            <div class="loading-state">Cargando franjas...</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="modalReserva">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitReserva">Confirmar Reserva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Crear Aula -->
+  <div class="modal-overlay" id="modalAula">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>🏢 Añadir Nueva Aula</h3>
+        <button class="modal-close" data-close="modalAula">&times;</button>
+      </div>
+      <form id="formCrearAula" class="modal-body">
+        <div class="form-group">
+          <label for="aulaNombre">Nombre del Aula: *</label>
+          <input type="text" id="aulaNombre" required class="form-control" placeholder="Ej: Aula 102 - Informática">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="aulaCapacidad">Capacidad (alumnos): *</label>
+            <input type="number" id="aulaCapacidad" required min="1" max="500" value="25" class="form-control">
+          </div>
+          <div class="form-group col">
+            <label for="aulaPlanta">Planta / Piso:</label>
+            <input type="number" id="aulaPlanta" min="0" max="10" value="1" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="toggle-control">
+            <input type="checkbox" id="aulaOrdenadores" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">¿Dispone de ordenadores para los alumnos?</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="aulaDescripcion">Descripción u observaciones:</label>
+          <textarea id="aulaDescripcion" rows="2" class="form-control" placeholder="Ej: Dispone de proyector y 25 puestos con Windows 11"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="modalAula">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Aula</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Crear Profesor -->
+  <div class="modal-overlay" id="modalProfesor">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>👨‍🏫 Registrar Nuevo Profesor</h3>
+        <button class="modal-close" data-close="modalProfesor">&times;</button>
+      </div>
+      <form id="formCrearProfesor" class="modal-body">
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="profNombre">Nombre: *</label>
+            <input type="text" id="profNombre" required class="form-control" placeholder="Ej: Juan">
+          </div>
+          <div class="form-group col">
+            <label for="profApellidos">Apellidos: *</label>
+            <input type="text" id="profApellidos" required class="form-control" placeholder="Ej: Gómez">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="profDni">DNI: *</label>
+            <input type="text" id="profDni" required maxlength="9" class="form-control" placeholder="Ej: 12345678A">
+          </div>
+          <div class="form-group col">
+            <label for="profTelefono">Teléfono: *</label>
+            <input type="tel" id="profTelefono" required maxlength="15" class="form-control" placeholder="Ej: 600123456">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="profEmail">Correo Electrónico: *</label>
+          <input type="email" id="profEmail" required class="form-control" placeholder="Ej: profesor@juanbosco.es">
+        </div>
+
+        <div class="form-group">
+          <label for="profFechaNac">Fecha de Nacimiento:</label>
+          <input type="date" id="profFechaNac" class="form-control">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="modalProfesor">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Profesor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Crear Franja Horaria -->
+  <div class="modal-overlay" id="modalFranja">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>⏰ Añadir Franja Horaria</h3>
+        <button class="modal-close" data-close="modalFranja">&times;</button>
+      </div>
+      <form id="formCrearFranja" class="modal-body">
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="franjaDesde">Hora de inicio (desde): *</label>
+            <input type="time" id="franjaDesde" required class="form-control" value="08:30">
+          </div>
+          <div class="form-group col">
+            <label for="franjaHasta">Hora de fin (hasta): *</label>
+            <input type="time" id="franjaHasta" required class="form-control" value="09:25">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="modalFranja">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Franja</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Configuración API -->
+  <div class="modal-overlay" id="modalConfigApi">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>⚙️ Configuración del Servidor API REST</h3>
+        <button class="modal-close" data-close="modalConfigApi">&times;</button>
+      </div>
+      <form id="formConfigApi" class="modal-body">
+        <div class="form-group">
+          <label for="apiUrlInput">URL Base de Spring Boot:</label>
+          <input type="text" id="apiUrlInput" class="form-control" value="http://localhost:8080" placeholder="http://localhost:8080">
+          <small class="form-hint">Asegúrate de que la aplicación Spring Boot está corriendo en este puerto.</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="modalConfigApi">Cerrar</button>
+          <button type="submit" class="btn btn-primary">Guardar y Reconectar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Contenedor flotante de Notificaciones Toast -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Footer didáctico -->
+  <footer class="app-footer">
+    <p>Proyecto <strong>GestionReservas</strong> · UT1 Acceso a Datos · IES San Juan Bosco</p>
+    <p class="footer-links">
+      <span>Endpoints REST: <code>/profesores</code> · <code>/aulas</code> · <code>/franjas-horarias</code> · <code>/reservas</code></span>
+    </p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -170,4 +170,43 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
     - *Especificación 4 (Frontend):* **Pendiente**. No existe la carpeta `/frontend` en el repositorio; el alumno debe desarrollarla con HTML, CSS y JS vanilla.
     - *Especificación 5 (Documentación):* Completo (`AGENTS.md`, `README.md` actualizado y `DOC.md` al día).
 
+---
+
+## 📌 Petición 7: Implementación del Frontend Ligero y Optimización de la Serialización JSON
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - Analizar el estado global del proyecto.
+  - Crear el frontend ligero solicitado en el Apartado 4 del enunciado, ubicado en la carpeta `/frontend`.
+  - Diseñar una interfaz moderna, visualmente atractiva y 100% funcional, construida exclusivamente con HTML5, CSS3 y JavaScript vanilla (sin frameworks ni librerías externas).
+  - Incorporar herramientas didácticas para entender el funcionamiento interno de la aplicación (inspector de tráfico HTTP en vivo, visualización de respuestas JSON, control de reglas de negocio y carga rápida de datos de demostración).
+- **Cambios Efectuados:**
+  - **[`frontend/index.html`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/index.html):**
+    - Creada la estructura semántica de la aplicación web con navegación por pestañas (Reservas, Aulas & Filtros, Profesores, Franjas Horarias e Inspector de API).
+    - Incorporada tabla interactiva de reservas con columna dedicada para `insertionDate` (`@PrePersist`).
+    - Diseñado panel interactivo para el Apartado 2 con previsualización en tiempo real de la URL con query params (`/aulas?ordenadores=true&capacidad=20`).
+    - Formularios modales para el alta de reservas, aulas, profesores y franjas horarias.
+    - Contenedor de notificaciones toast y modal de configuración de URL del backend.
+  - **[`frontend/css/styles.css`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/css/styles.css):**
+    - Creado tema visual moderno basado en tonos slate oscuros (`#0b1120`, `#1e293b`), contrastes cuidados, transiciones suaves y acentos de color (índigo, esmeralda, ámbar, rojo).
+    - Maquetación completamente adaptable (*responsive*) con CSS Grid y Flexbox.
+    - Estilos específicos para visualización de código JSON, chips de métodos HTTP (`GET`, `POST`, `DELETE`), interruptores tipo toggle y tarjetas informativas.
+  - **[`frontend/js/app.js`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+    - Implementado cliente REST asíncrono con `fetch` que intercepta llamadas, mide latencias y captura payloads de petición y respuesta.
+    - Lógica de negocio de creación de reservas con validación de fecha no pasada y captura de error `400 Bad Request` en caso de franja horaria ocupada.
+    - Gestión de filtros dinámicos de aulas enviando `@RequestParam` según los controles de la UI.
+    - Monitor e Inspector de API en vivo que traduce cada respuesta del backend en una explicación didáctica en español sobre la regla de negocio aplicada.
+    - Seeder automático ("⚡ Cargar Datos Demo") que inserta datos coherentes para facilitar la grabación del vídeo evaluativo.
+  - **[`Reserva.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Reserva.java), [`Profesor.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Profesor.java), [`Aula.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Aula.java), [`FranjaHoraria.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/FranjaHoraria.java):**
+    - Incorporada la anotación `@JsonIgnoreProperties` en las relaciones bidireccionales para evitar la recursión infinita en Jackson (`Infinite recursion / StackOverflowError`) al consultar reservas o entidades relacionadas desde el frontend.
+  - **[`ReservaRepository.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/repository/ReservaRepository.java) y [`ReservaService.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/service/ReservaService.java):**
+    - Corregido el parámetro de `Collection<List<FranjaHoraria>>` a `Collection<FranjaHoraria>` eliminando el empaquetado innecesario con `Collections.singleton()`.
+  - **[`README.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/README.md) y [`AGENTS.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/AGENTS.md):**
+    - Actualizado el catálogo de archivos, marcada la Especificación 4 como completada y añadido el apartado de documentación del frontend.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Sin dependencias externas:** El frontend no requiere conexión a Internet (no usa CDNs de fuentes, Tailwind ni Bootstrap), lo cual garantiza máxima rapidez, compatibilidad en entornos de examen cerrados y cumplimiento estricto del enunciado ("únicamente HTML, CSS y JavaScript, sin frameworks").
+  - **Compatibilidad con `file://`:** Al estar configurado `CorsConfig.java` con `allowedOriginPatterns("*")`, el alumno puede abrir `frontend/index.html` haciendo doble clic en el explorador de archivos sin necesidad de levantar un servidor web estático auxiliar.
+  - **Soporte para grabación del vídeo de entrega (5-10 minutos):** El Inspector de API en vivo y el botón de carga de datos demo proporcionan una herramienta visual para que el estudiante muestre en pantalla qué petición envía el navegador, qué código HTTP devuelve Spring Boot y cómo se reflejan las validaciones de negocio exigidas en la práctica.
+
+
 

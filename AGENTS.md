@@ -60,9 +60,15 @@ A continuación se detalla la función, responsabilidades y contenido de cada un
 - **[`AGENTS.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/AGENTS.md):**
   - Este mismo documento: manual técnico exhaustivo para agentes.
 
----
+### 3.2. Archivos del Frontend Ligero (`/frontend`)
+- **[`frontend/index.html`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/index.html):**
+  - Estructura semántica en HTML5: navegación por pestañas (Reservas, Aulas & Filtros, Profesores, Franjas Horarias, Inspector API), tabla interactiva de reservas, tarjetas de aulas con filtros de capacidad y ordenadores, modales de creación y contenedor de notificaciones toast.
+- **[`frontend/css/styles.css`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/css/styles.css):**
+  - Diseño moderno responsive en CSS3 puro utilizando variables CSS (`--bg-primary`, `--primary`, `--success`, etc.), sistema de rejilla (CSS Grid), Flexbox, animaciones de transición, soporte para badges de estado HTTP y estilo tipo panel de control / devtools.
+- **[`frontend/js/app.js`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+  - Lógica en JavaScript vanilla (sin frameworks): cliente HTTP con interceptor para auditar tráfico en tiempo real, gestión de peticiones asíncronas (`async/await`), validaciones de negocio en cliente y captura de códigos HTTP (`200`, `201`, `204`, `400`), filtrado dinámico de aulas (`@RequestParam`) y función seeder para insertar datos de prueba con un solo clic.
 
-### 3.2. Recursos de Configuración Spring Boot
+### 3.3. Recursos de Configuración Spring Boot
 - **[`src/main/resources/application.properties`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/resources/application.properties):**
   - Conexión JDBC a MariaDB: `jdbc:mariadb://localhost:3306/app_db`.
   - Credenciales: usuario `aitor`, contraseña `aitor123`.

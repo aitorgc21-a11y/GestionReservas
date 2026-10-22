@@ -161,6 +161,8 @@ En cumplimiento del apartado 3 del enunciado, al crear una reserva (`POST /reser
 - **Inmutabilidad de identificadores:** Se estableció la regla de no permitir modificación del `id` en `PUT` y `PATCH`, preservando la integridad de clave primaria de la base de datos.
 
 ### Problemas encontrados y errores corregidos
+- **Recursión cíclica en serialización JSON (StackOverflowError):** Las relaciones bidireccionales (`@OneToMany` y `@ManyToOne` entre Reserva, Profesor, Aula y FranjaHoraria) provocaban bucles infinitos en Jackson al serializar respuestas REST. Se solucionó incorporando `@JsonIgnoreProperties` en las entidades correspondientes.
+- **Tipado en consulta derivada de solapamiento:** En `ReservaRepository`, el parámetro de la franja horaria tenía anidamiento `Collection<List<FranjaHoraria>>`. Se ajustó a `Collection<FranjaHoraria>` y se limpió el método en `ReservaService` para trabajar con colecciones nativas de entidades.
 - **Condición invertida en controlador de reservas:** En una versión previa, la llamada `if (reservaService.valida(reserva))` rechazaba peticiones válidas. Se corrigió a `if (!reservaService.valida(reserva))`.
 - **Comprobación de ID nulo en repositorio:** La consulta inicial de solapamiento comprobaba `id == null`, lo que impedía detectar colisiones con reservas ya guardadas en la base de datos. Se simplificó a `existsByAulaAndDateAndFranjasHorariasIn(Aula, LocalDate, Collection<FranjaHoraria>)`.
 - **Ciclo de vida JPA en `Reserva`:** Se movió la inicialización de `insertionDate` del controlador al método `@PrePersist` de la entidad para dar cumplimiento literal al requisito de completarse en la propia entidad.
@@ -168,14 +170,40 @@ En cumplimiento del apartado 3 del enunciado, al crear una reserva (`POST /reser
 ### Prompts de ejemplo utilizados
 - *"Analiza el proyecto y la clase Aula con los cambios sin commitear todavía. Lo he intentado hacer sin IA y no sé si es correcto la documentación con los endpoints ni el método de findAll con las consultas puestas. ¿Puedes verificar si es correcto o explicarme si es que lo he hecho mal y arreglarlo?"*
 - *"Quiero que analices el estado final del proyecto, me comentes si falta algo por aplicar del enunciado y que si todo es correcto, documentes en el README la información correcta y legible por humanos para este proyecto."*
+- *"Analiza el proyecto. Luego, crea el frontend sencillo que pide en enunciado. Hazlo moderno, visualmente bonito y funcional. Si quieres añadir detalles para entender mejor qué está haciendo el programa por dentro y tal mejor. Que quede lo mejor posible adaptado a la práctica."*
 
 ---
 
-## 📋 7. Estado del Proyecto y Requisitos Pendientes
+## 🎨 7. Frontend Ligero (`/frontend`) - Especificación 4
+
+En cumplimiento de la Especificación 4, se ha desarrollado una interfaz web moderna, intuitiva y funcional utilizando **exclusivamente HTML5, CSS3 y JavaScript vanilla** (sin dependencias ni frameworks externos como React, Vue, Angular o jQuery).
+
+### Características Principales:
+1. **Gestión de Reservas:**
+   - Tabla interactiva con todas las reservas registradas.
+   - Formulario modal para crear reservas seleccionando profesor, aula, fecha (validada para no permitir días pasados) y una o múltiples franjas horarias.
+   - Muestra de forma transparente la fecha de auditoría `insertionDate` autogenerada mediante `@PrePersist`.
+   - Eliminación de reservas con confirmación previa (`DELETE /reservas/{id}`).
+2. **Consultas Especiales de Aulas (Apartado 2):**
+   - Filtros interactivos con switch de "Solo con ordenadores" (`?ordenadores=true`) y capacidad mínima (`?capacidad=X`).
+   - Muestra en tiempo real la URL REST generada que se envía a Spring Boot.
+3. **Catálogo de Profesores y Franjas Horarias:**
+   - Visualización y alta de profesores y franjas horarias lectivas.
+4. **Inspector de API REST en Tiempo Real (Detalle Didáctico):**
+   - Monitor que captura cada llamada HTTP (`GET`, `POST`, `DELETE`, etc.), mostrando el método, endpoint, código de respuesta HTTP (`200`, `201`, `400`, `204`), latencia, JSON enviado/recibido y una **explicación técnica en español de la regla de negocio ejecutada**.
+5. **Carga de Datos Demo en 1 Clic:**
+   - Botón *"⚡ Cargar Datos Demo"* para sembrar instantáneamente en la base de datos profesores, aulas y franjas horarias de prueba, ideal para la grabación del vídeo demostrativo.
+
+### Puesta en Marcha del Frontend:
+- Basta con abrir el archivo [`frontend/index.html`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/index.html) directamente en cualquier navegador web moderno (doble clic o mediante Live Server). Gracias a la configuración en [`CorsConfig.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/CorsConfig.java), funciona directamente incluso mediante el protocolo `file://`.
+
+---
+
+## 📋 8. Estado del Proyecto y Requisitos
 
 - [x] **Especificación 1:** Entidades JPA, repositorios, controladores CRUD y `@PrePersist` en `Reserva`.
 - [x] **Especificación 2:** Filtros de aulas por `ordenadores` y `capacidad` (`@RequestParam`).
 - [x] **Especificación 3:** Validaciones de franjas horarias libres y fechas no pasadas en reservas.
-- [ ] **Especificación 4 (Pendiente):** Creación del frontend en la carpeta `/frontend` con HTML, CSS y JavaScript vanilla.
+- [x] **Especificación 4:** Frontend ligero en `/frontend` desarrollado con HTML5, CSS3 y JavaScript vanilla.
 - [x] **Especificación 5:** Documentación en `AGENTS.md`, `README.md` y bitácora en `DOC.md`.
 - [ ] **Entrega:** Grabación del vídeo explicativo (5-10 minutos) mostrando Postman y frontend.
