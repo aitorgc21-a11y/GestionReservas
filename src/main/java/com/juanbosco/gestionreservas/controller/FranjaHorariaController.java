@@ -23,8 +23,8 @@ public class FranjaHorariaController {
 
     // GET http://localhost:8080/franjas-horarias
     @GetMapping()
-    public List<FranjaHoraria> franjasHorarias() {
-        return franjaHorariaRepository.findAll();
+    public ResponseEntity<List<FranjaHoraria>> franjasHorarias() {
+        return ResponseEntity.ok(franjaHorariaRepository.findAll()); // 200 OK + list aFranjaHorarias
     }
 
     // GET http://localhost:8080/franjas-horarias/{id}

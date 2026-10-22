@@ -24,8 +24,8 @@ public class ReservaController {
 
     // GET http://localhost:8080/reservas
     @GetMapping()
-    public List<Reserva> reservas() {
-        return reservaRepository.findAll();
+    public ResponseEntity<List<Reserva>> reservas() {
+        return ResponseEntity.ok(reservaRepository.findAll()); // 200 OK + lista Reserva
     }
 
     // GET http://localhost:8080/reservas/{id}

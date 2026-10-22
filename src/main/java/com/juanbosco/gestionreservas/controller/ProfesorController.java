@@ -23,8 +23,8 @@ public class ProfesorController {
 
     // GET http://localhost:8080/profesores
     @GetMapping()
-    public List<Profesor> profesores() {
-        return profesorRepository.findAll();
+    public ResponseEntity<List<Profesor>> profesores() {
+        return ResponseEntity.ok(profesorRepository.findAll()); // 200 OK + lista Profesor
     }
 
     // GET http://localhost/8080:profesores/id
