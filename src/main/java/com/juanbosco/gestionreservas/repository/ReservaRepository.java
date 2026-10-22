@@ -14,6 +14,6 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     boolean existsByAulaAndDateAndFranjasHorariasIn(
             Aula aula,
             LocalDate date,
-            Collection<FranjaHoraria> franjasHorarias
+            Collection<List<FranjaHoraria>> franjasHorarias
     );
 }
