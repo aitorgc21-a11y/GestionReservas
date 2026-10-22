@@ -181,17 +181,17 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
   - Diseñar una interfaz moderna, visualmente atractiva y 100% funcional, construida exclusivamente con HTML5, CSS3 y JavaScript vanilla (sin frameworks ni librerías externas).
   - Incorporar herramientas didácticas para entender el funcionamiento interno de la aplicación (inspector de tráfico HTTP en vivo, visualización de respuestas JSON, control de reglas de negocio y carga rápida de datos de demostración).
 - **Cambios Efectuados:**
-  - **[`frontend/index.html`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/index.html):**
+  - **[`src/main/resources/static/index.html`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/index.html):**
     - Creada la estructura semántica de la aplicación web con navegación por pestañas (Reservas, Aulas & Filtros, Profesores, Franjas Horarias e Inspector de API).
     - Incorporada tabla interactiva de reservas con columna dedicada para `insertionDate` (`@PrePersist`).
     - Diseñado panel interactivo para el Apartado 2 con previsualización en tiempo real de la URL con query params (`/aulas?ordenadores=true&capacidad=20`).
     - Formularios modales para el alta de reservas, aulas, profesores y franjas horarias.
     - Contenedor de notificaciones toast y modal de configuración de URL del backend.
-  - **[`frontend/css/styles.css`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/css/styles.css):**
+  - **[`src/main/resources/static/css`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/css/styles.css):**
     - Creado tema visual moderno basado en tonos slate oscuros (`#0b1120`, `#1e293b`), contrastes cuidados, transiciones suaves y acentos de color (índigo, esmeralda, ámbar, rojo).
     - Maquetación completamente adaptable (*responsive*) con CSS Grid y Flexbox.
     - Estilos específicos para visualización de código JSON, chips de métodos HTTP (`GET`, `POST`, `DELETE`), interruptores tipo toggle y tarjetas informativas.
-  - **[`frontend/js/app.js`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+  - **[`src/main/resources/static/js`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
     - Implementado cliente REST asíncrono con `fetch` que intercepta llamadas, mide latencias y captura payloads de petición y respuesta.
     - Lógica de negocio de creación de reservas con validación de fecha no pasada y captura de error `400 Bad Request` en caso de franja horaria ocupada.
     - Gestión de filtros dinámicos de aulas enviando `@RequestParam` según los controles de la UI.
@@ -203,7 +203,7 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
     - Actualizado el catálogo de archivos, marcada la Especificación 4 como completada y añadido el apartado de documentación del frontend.
 - **Información Relevante y Decisiones Técnicas:**
   - **Sin dependencias externas:** El frontend no requiere conexión a Internet (no usa CDNs de fuentes, Tailwind ni Bootstrap), lo cual garantiza máxima rapidez, compatibilidad en entornos de examen cerrados y cumplimiento estricto del enunciado ("únicamente HTML, CSS y JavaScript, sin frameworks").
-  - **Compatibilidad con `file://`:** Al estar configurado `CorsConfig.java` con `allowedOriginPatterns("*")`, el alumno puede abrir `frontend/index.html` haciendo doble clic en el explorador de archivos sin necesidad de levantar un servidor web estático auxiliar.
+  - **Compatibilidad con `file://`:** Al estar configurado `CorsConfig.java` con `allowedOriginPatterns("*")`, el alumno puede abrir `src/main/resources/static/index.html` haciendo doble clic en el explorador de archivos sin necesidad de levantar un servidor web estático auxiliar.
   - **Soporte para grabación del vídeo de entrega (5-10 minutos):** El Inspector de API en vivo y el botón de carga de datos demo proporcionan una herramienta visual para que el estudiante muestre en pantalla qué petición envía el navegador, qué código HTTP devuelve Spring Boot y cómo se reflejan las validaciones de negocio exigidas en la práctica.
 
 ---
@@ -258,7 +258,7 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
 
 - **Fecha:** 22 de octubre de 2026
 - **Resumen de la Petición:**
-  - El usuario consulta por qué Git no detecta el archivo `frontend/js/app.js` para ser subido a GitHub ni permite incluirlo en los commits.
+  - El usuario consulta por qué Git no detecta el archivo `src/main/resources/static/js` para ser subido a GitHub ni permite incluirlo en los commits.
   - Diagnosticar el estado de seguimiento del archivo en Git y en el IDE IntelliJ IDEA, y proporcionar las instrucciones exactas para subirlo al repositorio remoto.
 - **Cambios Efectuados:**
   - **[`DOC.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/DOC.md):**
@@ -267,12 +267,12 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
   - **Diagnóstico del archivo en Git:**
     1. Se verificó con `git check-ignore -v frontend/js/app.js` que el archivo **no** está ignorado por `.gitignore` ni por ninguna regla del sistema.
     2. El archivo existe en disco con permisos de lectura correctos (`-rw-r--r--`).
-    3. `git status` muestra `frontend/js/` en estado *untracked* (sin seguimiento), ya que al haberse creado el subdirectorio y el archivo por una herramienta externa al IDE, Git no los versiona automáticamente hasta que se realiza un `git add`.
+    3. `git status` muestra `src/main/resources/static/js` en estado *untracked* (sin seguimiento), ya que al haberse creado el subdirectorio y el archivo por una herramienta externa al IDE, Git no los versiona automáticamente hasta que se realiza un `git add`.
   - **Causa en IntelliJ IDEA:**
     - En IntelliJ, los archivos nuevos creados externamente aparecen agrupados en la sección **"Unversioned Files"** (Archivos no versionados, con color rojo o beige), separada de "Changes" (archivos ya rastreados modificados).
     - Si al hacer el commit en IntelliJ la casilla de "Unversioned Files" permanece desmarcada (comportamiento por defecto en muchos perfiles de IntelliJ), el archivo se omite del commit y por tanto no sube a GitHub.
   - **Solución provista:**
-    - Hacer clic derecho sobre `frontend/js/app.js` en IntelliJ -> **Git -> Add** (o `Ctrl + Alt + A`), o marcar la casilla correspondiente en la ventana de Commit.
+    - Hacer clic derecho sobre `src/main/resources/static/js` en IntelliJ -> **Git -> Add** (o `Ctrl + Alt + A`), o marcar la casilla correspondiente en la ventana de Commit.
     - Alternativamente, ejecutar `git add frontend/js/app.js` en terminal para dejarlo preparado para commit y push.
 
 
@@ -290,7 +290,7 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
 - **Cambios Efectuados:**
   - **[`CorsConfig.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/CorsConfig.java):**
     - Se añadió `.allowedHeaders("*")` y el método `OPTIONS` a la configuración CORS de Spring Boot para autorizar sin restricciones las peticiones *preflight* que los navegadores web emiten antes de ejecutar métodos destructivos como `DELETE`.
-  - **[`frontend/js/app.js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+  - **[`src/main/resources/static/js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
     - Se optimizó `apiFetch` para no adjuntar cabecera `Content-Type: application/json` en peticiones que no tienen cuerpo (`DELETE` y `GET`), evitando disparar preflights innecesarios.
     - Se mejoraron las funciones `deleteAula`, `deleteProfesor` y `deleteFranja` para capturar respuestas `409 Conflict` o `500` e informar didácticamente al usuario de que la eliminación está impedida por existir reservas asociadas.
   - **[`AulaController.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/AulaController.java), [`ProfesorController.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ProfesorController.java), [`FranjaHorariaController.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/FranjaHorariaController.java):**
@@ -320,7 +320,7 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
     - Se mantuvo intacta la firma y los parámetros originales exigidos por las comprobaciones de IntelliJ IDEA.
   - **[`ReservaController.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ReservaController.java):**
     - Se añadió traza de depuración cuando la petición `POST /reservas` incluye un `id` en el cuerpo del JSON (causa habitual de 400 en pruebas con Postman).
-  - **[`frontend/js/app.js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+  - **[`src/main/resources/static/js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
     - Se sustituyó el uso de `new Date().toISOString().split('T')[0]` por una función local `getLocalDateString()` que utiliza la fecha del sistema local del usuario (`getFullYear()`, `getMonth()`, `getDate()`). Esto previene el clásico desfase de zona horaria UTC que en horarios nocturnos en España (CEST / UTC+2) genera la fecha de ayer y provoca el rechazo de `date.isBefore(now)`.
     - Se actualizó el texto explicativo didáctico del inspector de red para el código 400, desglosando todas las causas posibles en lugar de atribuirlo exclusivamente a fecha o solapamiento.
     - Se mejoró el mensaje Toast de error 400 indicando al usuario que revise la consola de ejecución de Spring Boot en IntelliJ.
@@ -347,11 +347,11 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
   - El usuario reporta un fallo en el frontend: al pulsar el icono o botón de eliminar en cualquier registro (reservas, aulas, profesores o franjas horarias), la aplicación no elimina el dato ni muestra ningún tipo de mensaje, incluso en registros que no tienen reservas asociadas (como un profesor recién creado).
   - Analizar las causas del fallo en la interfaz de usuario y solventarlo de forma limpia y moderna.
 - **Cambios Efectuados:**
-  - **[`frontend/index.html`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/index.html):**
+  - **[`src/main/resources/static/index.html`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/index.html):**
     - Se incorporó el nuevo modal de confirmación `modalConfirmDelete` (`#modalConfirmDeleteTitle`, `#modalConfirmDeleteMessage`, `#modalConfirmDeleteWarning` y `#btnConfirmDeleteAction`), eliminando la dependencia de la función nativa y síncrona `window.confirm()`.
-  - **[`frontend/css/styles.css`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/css/styles.css):**
+  - **[`src/main/resources/static/css`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/css/styles.css):**
     - Se definieron las clases `.btn-danger` y `.btn-danger:hover` para estilizar coherentemente los botones de confirmación de borrado en tonos carmesí/rojo con soporte de sombreado y transición suave.
-  - **[`frontend/js/app.js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+  - **[`src/main/resources/static/js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
     - Se implementó la función gestora `requestConfirmAction({ title, message, warning, btnText, onConfirm })` que muestra el modal personalizado sin bloquear el hilo principal de JavaScript ni depender del navegador.
     - Se adaptaron las funciones de eliminación (`confirmDeleteReserva`, `deleteAula`, `deleteProfesor`, `deleteFranja`) y la carga de datos de prueba (`seedDemoData`) para invocar el nuevo modal visual.
     - Se añadió `type="button"` a todos los botones de borrado generados dinámicamente en tablas y tarjetas para evitar comportamientos accidentales de envío de formulario.

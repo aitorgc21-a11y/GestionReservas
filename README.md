@@ -195,7 +195,7 @@ En cumplimiento de la Especificación 4, se ha desarrollado una interfaz web mod
    - Botón *"⚡ Cargar Datos Demo"* para sembrar instantáneamente en la base de datos profesores, aulas y franjas horarias de prueba, ideal para la grabación del vídeo demostrativo.
 
 ### Puesta en Marcha del Frontend:
-- Basta con abrir el archivo [`frontend/index.html`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/index.html) directamente en cualquier navegador web moderno (doble clic o mediante Live Server). Gracias a la configuración en [`CorsConfig.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/CorsConfig.java), funciona directamente incluso mediante el protocolo `file://`.
+- Basta con abrir el archivo [`src/main/resources/static/index.html`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/frontend/index.html) directamente en cualquier navegador web moderno (doble clic o mediante Live Server). Gracias a la configuración en [`CorsConfig.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/CorsConfig.java), funciona directamente incluso mediante el protocolo `file://`.
 
 ---
 
