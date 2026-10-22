@@ -2,6 +2,7 @@ package com.juanbosco.gestionreservas.controller;
 
 import com.juanbosco.gestionreservas.entity.Reserva;
 import com.juanbosco.gestionreservas.repository.ReservaRepository;
+import com.juanbosco.gestionreservas.service.ReservaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +17,12 @@ import java.util.Optional;
 public class ReservaController {
 
     private final ReservaRepository reservaRepository;
+    private final ReservaService reservaService;
 
     // Inyección de dependencias
-    public ReservaController(ReservaRepository reservaRepository) {
+    public ReservaController(ReservaRepository reservaRepository, ReservaService reservaService) {
         this.reservaRepository = reservaRepository;
+        this.reservaService = reservaService;
     }
 
     // GET http://localhost:8080/reservas
@@ -39,22 +42,15 @@ public class ReservaController {
     // POST http://localhost:8080/reservas --> Crea una reserva
     @PostMapping()
     public ResponseEntity<Reserva> create(@RequestBody Reserva reserva) {
-
-        // Comprueba que no exista ya una reserva con el mismo id
-        if (reserva.getId() != null) {
-            return ResponseEntity.badRequest().build();
+        // Si la reserva no es válida, se devuelve un Bad Request
+        if (reservaService.valida(reserva)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        // Comprueba que los campos requeridos no falten
-        if (reserva.getDate() == null) {
-            return ResponseEntity.badRequest().build();
-        }
+        // Se aplica la fecha de inserción a la reserva
+        reserva.setInsertionDate(LocalDateTime.now());
 
-        // Si no se especifica fecha de inserción, se asigna automáticamente la fecha y hora del sistema
-        if (reserva.getInsertionDate() == null) {
-            reserva.setInsertionDate(LocalDateTime.now());
-        }
-
+        // Se devuelve el resultado correct y la reserva
         return ResponseEntity.status(HttpStatus.CREATED).body(reservaRepository.save(reserva));
     }
 
