@@ -21,9 +21,15 @@ public class AulaController {
         this.aulaRepository = aulaRepository;
     }
 
-    // GET http://localhost:8080/aulas
-    @GetMapping()
-    public List<Aula> aulas() {
+    // GET http://localhost:8080/aulas -> Se puede poner aulas?ordenadores=true para solo mostrar las que tienen ordenadores
+    @GetMapping
+    public List<Aula> findAll(@RequestParam(required = false) Boolean ordenadores) {
+        // Si se puso la URL sin el parámetro de consulta
+        if (ordenadores != null) {
+            return aulaRepository.findByOrdenadores(ordenadores);
+        }
+
+        // Si puso el parámetro de consulta de ordenadores
         return aulaRepository.findAll();
     }
 
@@ -81,11 +87,13 @@ public class AulaController {
         if (aula.getName() != null) {
             aulaExistente.setName(aula.getName());
         }
-        aulaExistente.setOrdenadores(aula.isOrdenadores());
+        if (aula.getOrdenadores() != null) {
+            aulaExistente.setOrdenadores(aula.getOrdenadores());
+        }
         if (aula.getCapacity() > 0) {
             aulaExistente.setCapacity(aula.getCapacity());
         }
-        if (aula.getFloor() != 0) {
+        if (aula.getFloor() != null) {
             aulaExistente.setFloor(aula.getFloor());
         }
         if (aula.getDescription() != null) {

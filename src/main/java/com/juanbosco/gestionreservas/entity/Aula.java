@@ -23,12 +23,12 @@ public class Aula {
     private String name;
 
     @Column(nullable = false)
-    private boolean ordenadores;
+    private Boolean ordenadores;
 
     @Column(nullable = false)
     private int capacity;
 
-    private int floor;
+    private Integer floor;
 
     @Column(length = 100)
     private String description;
