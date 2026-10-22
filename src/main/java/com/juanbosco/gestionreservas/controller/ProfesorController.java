@@ -111,8 +111,12 @@ public class ProfesorController {
             return ResponseEntity.notFound().build();
         }
 
-        profesorRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        try {
+            profesorRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build(); // 409 Conflict: tiene reservas asociadas
+        }
     }
 
 }

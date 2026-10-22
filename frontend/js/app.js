@@ -36,7 +36,7 @@ async function apiFetch(endpoint, options = {}) {
   const startTime = performance.now();
   
   const headers = {
-    'Content-Type': 'application/json',
+    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     ...(options.headers || {})
   };
 
@@ -151,7 +151,7 @@ function generateTechnicalExplanation(log) {
       if (status === 201) {
         return `✅ Reserva registrada con éxito: La entidad completó automáticamente el atributo 'insertionDate' mediante el hook @PrePersist con LocalDateTime.now(). Además, superó las validaciones de fecha futura y franja disponible.`;
       } else if (status === 400) {
-        return `⚠️ Rechazado con 400 Bad Request por ReservaService: Se detectó que la fecha era anterior a hoy (date.isBefore(now)) o la franja horaria ya estaba ocupada en esa aula y fecha (solapamiento).`;
+        return `⚠️ Rechazado con 400 Bad Request por el servidor: Posibles causas: 1) Fecha anterior a hoy, 2) Franja horaria ya ocupada en esa aula y fecha (solapamiento), 3) Falta aula o fecha, o 4) ID enviado en el cuerpo. Revisa la consola de Spring Boot para el detalle exacto.`;
       }
     }
     if (method === 'DELETE') {
@@ -449,8 +449,8 @@ function openModalReserva(aulaIdPreseleccionada = null) {
   const containerFranjas = document.getElementById('reservaFranjasContainer');
   const inputFecha = document.getElementById('reservaFecha');
 
-  // Ajustar fecha mínima a hoy (Apartado 3: fecha no anterior a hoy)
-  const hoy = new Date().toISOString().split('T')[0];
+  // Ajustar fecha mínima a hoy (Apartado 3: fecha no anterior a hoy) utilizando hora local
+  const hoy = getLocalDateString();
   inputFecha.min = hoy;
   if (!inputFecha.value || inputFecha.value < hoy) {
     inputFecha.value = hoy;
@@ -504,8 +504,8 @@ async function handleCrearReserva(e) {
     return;
   }
 
-  // Validación previa en cliente de fecha
-  const hoy = new Date().toISOString().split('T')[0];
+  // Validación previa en cliente de fecha usando zona horaria local
+  const hoy = getLocalDateString();
   if (fecha < hoy) {
     showToast('Error de validación: La fecha de la reserva no puede ser anterior a hoy', 'danger');
     return;
@@ -530,7 +530,7 @@ async function handleCrearReserva(e) {
       document.getElementById('formCrearReserva').reset();
       await loadReservas();
     } else if (res.status === 400) {
-      showToast('El servidor rechazó la reserva (400 Bad Request): Comprueba que el aula esté libre en esa franja horaria.', 'danger');
+      showToast('El servidor rechazó la reserva (400 Bad Request): Comprueba que el aula esté libre en esa franja y que la fecha no sea anterior a hoy. Revisa la consola de Spring Boot para ver el motivo exacto.', 'danger');
     } else {
       showToast(`Error del servidor (${res.status}) al crear la reserva.`, 'danger');
     }
@@ -623,8 +623,10 @@ async function deleteAula(id) {
   try {
     const res = await apiFetch(`/aulas/${id}`, { method: 'DELETE' });
     if (res.status === 204) {
-      showToast(`Aula #${id} eliminada`, 'success');
+      showToast(`Aula #${id} eliminada correctamente`, 'success');
       await loadAulas();
+    } else if (res.status === 409 || res.status === 500) {
+      showToast(`No se puede eliminar el aula #${id}: tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
     } else {
       showToast(`No se pudo eliminar el aula (${res.status})`, 'danger');
     }
@@ -668,13 +670,15 @@ async function handleCrearProfesor(e) {
 }
 
 async function deleteProfesor(id) {
-  if (!confirm(`¿Eliminar profesor #${id}?`)) return;
+  if (!confirm(`¿Eliminar profesor #${id}? Si tiene reservas asociadas la base de datos lo impedirá.`)) return;
 
   try {
     const res = await apiFetch(`/profesores/${id}`, { method: 'DELETE' });
     if (res.status === 204) {
-      showToast(`Profesor #${id} eliminado`, 'success');
+      showToast(`Profesor #${id} eliminado correctamente`, 'success');
       await loadProfesores();
+    } else if (res.status === 409 || res.status === 500) {
+      showToast(`No se puede eliminar el profesor #${id}: tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
     } else {
       showToast(`No se pudo eliminar el profesor (${res.status})`, 'danger');
     }
@@ -714,13 +718,15 @@ async function handleCrearFranja(e) {
 }
 
 async function deleteFranja(id) {
-  if (!confirm(`¿Eliminar franja horaria #${id}?`)) return;
+  if (!confirm(`¿Eliminar franja horaria #${id}? Si tiene reservas asociadas la base de datos lo impedirá.`)) return;
 
   try {
     const res = await apiFetch(`/franjas-horarias/${id}`, { method: 'DELETE' });
     if (res.status === 204) {
-      showToast(`Franja #${id} eliminada`, 'success');
+      showToast(`Franja #${id} eliminada correctamente`, 'success');
       await loadFranjas();
+    } else if (res.status === 409 || res.status === 500) {
+      showToast(`No se puede eliminar la franja #${id}: tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
     } else {
       showToast(`No se pudo eliminar franja (${res.status})`, 'danger');
     }
@@ -819,7 +825,7 @@ async function seedDemoData() {
     // 4. Una Reserva de prueba para mañana
     const manana = new Date();
     manana.setDate(manana.getDate() + 1);
-    const fechaManana = manana.toISOString().split('T')[0];
+    const fechaManana = getLocalDateString(manana);
 
     const profCreado = (p1.ok && p1.data) ? p1.data : { id: 1 };
     const aulaCreada = (a1.ok && a1.data) ? a1.data : { id: 1 };
@@ -1002,6 +1008,13 @@ function showToast(message, type = 'info') {
 // ==========================================================================
 // 10. UTILIDADES DE FORMATO Y SANITIZACIÓN
 // ==========================================================================
+
+function getLocalDateString(d = new Date()) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 function formatHora(timeStr) {
   if (!timeStr) return '--:--';

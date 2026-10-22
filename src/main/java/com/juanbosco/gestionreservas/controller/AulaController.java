@@ -132,8 +132,12 @@ public class AulaController {
             return ResponseEntity.notFound().build();
         }
 
-        aulaRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        try {
+            aulaRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build(); // 409 Conflict: tiene reservas asociadas
+        }
     }
 
 }

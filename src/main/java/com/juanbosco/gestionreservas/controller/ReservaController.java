@@ -44,11 +44,13 @@ public class ReservaController {
     public ResponseEntity<Reserva> create(@RequestBody Reserva reserva) {
         // Al crear, el ID no debe venir especificado (se genera automáticamente)
         if (reserva.getId() != null) {
+            System.out.println("[ReservaController.create] Rechazado con 400 Bad Request: el ID debe ser nulo al crear.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         // Si la reserva no cumple las validaciones de negocio, devuelve 400 Bad Request
         if (!reservaService.valida(reserva)) {
+            System.out.println("[ReservaController.create] Rechazado con 400 Bad Request por fallo en validación de ReservaService.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 

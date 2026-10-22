@@ -19,11 +19,13 @@ public class ReservaService {
 
         // Si no tiene fecha o no tiene aula asignada, no es válida
         if (reserva.getDate() == null || reserva.getAula() == null) {
+            System.out.println("[ReservaService.valida] Rechazada: fecha o aula es nula.");
             return false;
         }
 
         // Si la fecha de la reserva es anterior a la fecha actual, no es válida
         if (reserva.getDate().isBefore(LocalDate.now())) {
+            System.out.println("[ReservaService.valida] Rechazada: la fecha " + reserva.getDate() + " es anterior a hoy (" + LocalDate.now() + ").");
             return false;
         }
 
@@ -34,7 +36,10 @@ public class ReservaService {
                     reserva.getDate(),
                     reserva.getFranjasHorarias()
             );
-            return !ocupada; // La franja ya está ocupada
+            if (ocupada) {
+                System.out.println("[ReservaService.valida] Rechazada: el aula " + reserva.getAula().getId() + " ya está ocupada para la fecha " + reserva.getDate() + " en la(s) franja(s) seleccionada(s).");
+                return false; // La franja ya está ocupada
+            }
         }
 
         return true;

@@ -97,8 +97,12 @@ public class FranjaHorariaController {
             return ResponseEntity.notFound().build();
         }
 
-        franjaHorariaRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        try {
+            franjaHorariaRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build(); // 409 Conflict: tiene reservas asociadas
+        }
     }
 
 }

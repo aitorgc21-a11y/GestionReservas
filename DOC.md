@@ -258,3 +258,62 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
 
 
 
+
+---
+
+## 📌 Petición 10: Diagnóstico de Errores al Eliminar Datos (Integridad Referencial y Configuración CORS)
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - El usuario reporta que no le permite eliminar ningún dato en la aplicación y pregunta por qué.
+  - Analizar las causas del fallo en las operaciones `DELETE` tanto a nivel de protocolo HTTP/CORS como en la persistencia de base de datos relacional.
+- **Cambios Efectuados:**
+  - **[`CorsConfig.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/CorsConfig.java):**
+    - Se añadió `.allowedHeaders("*")` y el método `OPTIONS` a la configuración CORS de Spring Boot para autorizar sin restricciones las peticiones *preflight* que los navegadores web emiten antes de ejecutar métodos destructivos como `DELETE`.
+  - **[`frontend/js/app.js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+    - Se optimizó `apiFetch` para no adjuntar cabecera `Content-Type: application/json` en peticiones que no tienen cuerpo (`DELETE` y `GET`), evitando disparar preflights innecesarios.
+    - Se mejoraron las funciones `deleteAula`, `deleteProfesor` y `deleteFranja` para capturar respuestas `409 Conflict` o `500` e informar didácticamente al usuario de que la eliminación está impedida por existir reservas asociadas.
+  - **[`AulaController.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/AulaController.java), [`ProfesorController.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ProfesorController.java), [`FranjaHorariaController.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/FranjaHorariaController.java):**
+    - Se incorporó bloque `try-catch` capturando `DataIntegrityViolationException` en los endpoints `DELETE /{id}` para devolver el código HTTP semántico `409 Conflict` en lugar de una excepción no controlada con código `500`.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Concepto clave de Acceso a Datos: Integridad Referencial (Foreign Keys):**
+    - En MariaDB / MySQL, las reservas actúan como registros dependientes (*hijos*) que tienen claves foráneas (`profesor_id`, `aula_id`, tabla intermedia `reserva_franjas_horarias`).
+    - El motor relacional **prohíbe estrictamente** eliminar una fila padre si existen filas hijas que dependen de ella (`Cannot delete or update a parent row: a foreign key constraint fails`).
+    - Por tanto, para eliminar un aula, un profesor o una franja horaria que esté en uso, es obligatorio eliminar previamente sus reservas asociadas en la pestaña de Reservas.
+    - Las reservas individuales sí pueden eliminarse libremente en cualquier momento (`DELETE /reservas/{id}` $\rightarrow$ `204 No Content`).
+
+---
+
+## 📌 Petición 11: Diagnóstico Exhaustivo del Código HTTP 400 Bad Request en Creación de Reservas y Sincronización Horaria
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - El usuario reporta que al intentar crear una nueva reserva el servidor responde con un código HTTP `400 Bad Request`.
+  - El inspector del frontend muestra el mensaje indicando que *"la fecha es anterior a la actual o ya está ocupada ese aula para esa franja"*, pero el usuario asegura que ninguna de las dos condiciones es cierta (la fecha seleccionada no es pasada y el aula no estaba ocupada).
+  - Solicita analizar detalladamente qué está ocurriendo internamente y dónde se origina el problema.
+- **Cambios Efectuados:**
+  - **[`ReservaService.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/service/ReservaService.java):**
+    - Se incorporaron trazas de depuración informativas por consola (`System.out.println`) en cada una de las condiciones de guarda del método `valida()`:
+      1. Fecha o aula nulas.
+      2. Fecha anterior a `LocalDate.now()`.
+      3. Aula ocupada en la franja y fecha solicitadas según la consulta del repositorio.
+    - Se mantuvo intacta la firma y los parámetros originales exigidos por las comprobaciones de IntelliJ IDEA.
+  - **[`ReservaController.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ReservaController.java):**
+    - Se añadió traza de depuración cuando la petición `POST /reservas` incluye un `id` en el cuerpo del JSON (causa habitual de 400 en pruebas con Postman).
+  - **[`frontend/js/app.js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+    - Se sustituyó el uso de `new Date().toISOString().split('T')[0]` por una función local `getLocalDateString()` que utiliza la fecha del sistema local del usuario (`getFullYear()`, `getMonth()`, `getDate()`). Esto previene el clásico desfase de zona horaria UTC que en horarios nocturnos en España (CEST / UTC+2) genera la fecha de ayer y provoca el rechazo de `date.isBefore(now)`.
+    - Se actualizó el texto explicativo didáctico del inspector de red para el código 400, desglosando todas las causas posibles en lugar de atribuirlo exclusivamente a fecha o solapamiento.
+    - Se mejoró el mensaje Toast de error 400 indicando al usuario que revise la consola de ejecución de Spring Boot en IntelliJ.
+  - **[`GestionReservasApplicationTests.java`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/src/test/java/com/juanbosco/gestionreservas/GestionReservasApplicationTests.java):**
+    - Se verificó mediante prueba unitaria la persistencia y la detección de reservas duplicadas contra la base de datos MariaDB activa, restaurando el archivo a su estado limpio (`contextLoads`).
+- **Información Relevante y Decisiones Técnicas:**
+  - **Causa 1: Origen del mensaje mostrado en pantalla:**
+    - El controlador `ReservaController.create()` responde `ResponseEntity.status(HttpStatus.BAD_REQUEST).build()`, es decir, un HTTP 400 **con el cuerpo totalmente vacío**.
+    - El mensaje *"la fecha es anterior a la actual o ya está ocupada ese aula para esa franja"* no provenía de Spring Boot ni de MariaDB, sino que era una deducción predefinida en el cliente JavaScript del inspector al detectar el código 400.
+  - **Causa 2: Desfase UTC vs Zona Local en navegadores (`toISOString`):**
+    - En JavaScript, `toISOString()` convierte la fecha a UTC (meridiano 0). En la franja horaria de España (UTC+2 en verano CEST o UTC+1 en invierno CET), si un usuario abre la aplicación en las primeras horas del día, `toISOString()` calcula las horas del día anterior, enviando `2026-10-21` en vez de `2026-10-22`. Al comparar en el servidor contra `LocalDate.now()`, la condición `isBefore` resulta verdadera y deniega la reserva.
+  - **Causa 3: Estructura del JSON en pruebas manuales (Postman):**
+    - Si la prueba se efectúa desde Postman, enviar campos planos como `"aula": 1`, `"aulaId": 1` o `"fecha": "..."` provoca que Jackson asigne `null` o lance `HttpMessageNotReadableException`, retornando 400. Igualmente, enviar `"id": ...` activa la comprobación `if (reserva.getId() != null) return 400`.
+  - **Causa 4: Reservas preexistentes de pruebas anteriores o demo:**
+    - La consulta de solapamiento comprueba franjas horarias a nivel de base de datos. Si el aula y la franja horaria elegidas coincidían con una reserva insertada previamente en la tabla `reserva_franjas_horarias`, la validación retorna `ocupada = true`.
+  - Con las trazas añadidas en `ReservaService` y `ReservaController`, el alumno puede observar en la consola de IntelliJ el motivo exacto por el que se rechaza cualquier reserva.
