@@ -172,30 +172,7 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
 
 ---
 
-## 📌 Petición 8: Diagnóstico y Resolución del Error 500 al Crear Reservas
-
-- **Fecha:** 22 de octubre de 2026
-- **Resumen de la Petición:**
-  - El usuario reporta que al crear una reserva con datos válidos desde la aplicación, el servidor responde con un código de error HTTP `500 Internal Server Error`.
-  - Investigar la causa raíz de dicho fallo, corregirlo y explicar por qué se producía.
-  - Asegurar la compatibilidad con el entorno de inspección de IntelliJ IDEA sin generar advertencias estáticas ni excepciones en tiempo de ejecución.
-- **Cambios Efectuados:**
-  - **[`Reserva.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Reserva.java):**
-    - Se eliminó `cascade = CascadeType.PERSIST` de las relaciones `@ManyToOne` (`profesor`, `aula`) y `@ManyToMany` (`franjasHorarias`).
-  - **[`ReservaRepository.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/repository/ReservaRepository.java):**
-    - Se definió de forma explícita la consulta con `@Query("SELECT (COUNT(r) > 0) FROM Reserva r JOIN r.franjasHorarias f WHERE r.aula = :aula AND r.date = :date AND f IN :franjasHorarias")` con parámetros nombrados `@Param`, garantizando compatibilidad simultánea con el analizador de IntelliJ IDEA y con el motor Hibernate ORM.
-  - **[`ReservaService.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/service/ReservaService.java):**
-    - Se mantuvo el paso directo de la colección `reserva.getFranjasHorarias()` a la consulta de disponibilidad.
-- **Información Relevante y Decisiones Técnicas:**
-  - **Causa Raíz 1 - Excepción de cascada persistente en entidad desasociada (`PersistentObjectException / InvalidDataAccessApiUsageException`):**
-    - Al enviar una reserva vía JSON con `{ "profesor": { "id": 1 }, "aula": { "id": 1 } }`, Jackson instancia objetos desasociados (*detached*) con su identificador ya poblado.
-    - Debido a `cascade = CascadeType.PERSIST`, al invocar `reservaRepository.save(reserva)`, Hibernate interpretaba que debía propagar la operación de inserción (`persist()`) a dichas entidades existentes.
-    - Según la especificación JPA, invocar `persist()` sobre una entidad desasociada que ya cuenta con clave primaria autoincremental genera `PersistentObjectException: Detached entity passed to persist: Aula/Profesor`, lo cual derivaba en el `HTTP 500`.
-    - En el modelo relacional, las reservas son entidades dependientes (*hijas*) que referencian recursos ya existentes (*padres*); por tanto, no procede aplicar cascada de persistencia hacia el aula o el profesor.
-  - **Causa Raíz 2 - Discrepancia de tipos en la consulta de solapamiento (`ClassCastException`):**
-    - El plugin de Spring Data JPA en IntelliJ evaluaba estáticamente la propiedad `List<FranjaHoraria> franjasHorarias` esperando un contenedor `Collection<List<FranjaHoraria>>`. Al empaquetarlo con `Collections.singleton()`, Hibernate en ejecución intentaba castear la lista interna como si fuera una entidad individual `FranjaHoraria`, lanzando `java.lang.ClassCastException: Cannot cast to entity type 'FranjaHoraria'`.
-    - La incorporación de `@Query` resuelve este dilema limpiamente: IntelliJ valida el tipo basándose en el alias del `JOIN` (que es `FranjaHoraria`), y Hibernate ejecuta la cláusula `f IN :franjasHorarias` sin fallos de casteo, respondiendo correctamente con `201 Created`.
-
+## 📌 Petición 7: Implementación del Frontend Ligero y Optimización de la Serialización JSON
 
 - **Fecha:** 22 de octubre de 2026
 - **Resumen de la Petición:**
@@ -222,14 +199,62 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
     - Seeder automático ("⚡ Cargar Datos Demo") que inserta datos coherentes para facilitar la grabación del vídeo evaluativo.
   - **[`Reserva.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Reserva.java), [`Profesor.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Profesor.java), [`Aula.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Aula.java), [`FranjaHoraria.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/FranjaHoraria.java):**
     - Incorporada la anotación `@JsonIgnoreProperties` en las relaciones bidireccionales para evitar la recursión infinita en Jackson (`Infinite recursion / StackOverflowError`) al consultar reservas o entidades relacionadas desde el frontend.
-  - **[`ReservaRepository.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/repository/ReservaRepository.java) y [`ReservaService.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/service/ReservaService.java):**
-    - Corregido el parámetro de `Collection<List<FranjaHoraria>>` a `Collection<FranjaHoraria>` eliminando el empaquetado innecesario con `Collections.singleton()`.
   - **[`README.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/README.md) y [`AGENTS.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/AGENTS.md):**
     - Actualizado el catálogo de archivos, marcada la Especificación 4 como completada y añadido el apartado de documentación del frontend.
 - **Información Relevante y Decisiones Técnicas:**
   - **Sin dependencias externas:** El frontend no requiere conexión a Internet (no usa CDNs de fuentes, Tailwind ni Bootstrap), lo cual garantiza máxima rapidez, compatibilidad en entornos de examen cerrados y cumplimiento estricto del enunciado ("únicamente HTML, CSS y JavaScript, sin frameworks").
   - **Compatibilidad con `file://`:** Al estar configurado `CorsConfig.java` con `allowedOriginPatterns("*")`, el alumno puede abrir `frontend/index.html` haciendo doble clic en el explorador de archivos sin necesidad de levantar un servidor web estático auxiliar.
   - **Soporte para grabación del vídeo de entrega (5-10 minutos):** El Inspector de API en vivo y el botón de carga de datos demo proporcionan una herramienta visual para que el estudiante muestre en pantalla qué petición envía el navegador, qué código HTTP devuelve Spring Boot y cómo se reflejan las validaciones de negocio exigidas en la práctica.
+
+---
+
+## 📌 Petición 8: Diagnóstico y Resolución del Error 500 al Crear Reservas
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - El usuario reporta que al crear una reserva con datos válidos desde la aplicación, el servidor responde con un código de error HTTP `500 Internal Server Error`.
+  - Investigar la causa raíz de dicho fallo, corregirlo y explicar por qué se producía.
+  - Asegurar la compatibilidad con el entorno de inspección de IntelliJ IDEA sin generar advertencias estáticas ni excepciones en tiempo de ejecución.
+- **Cambios Efectuados:**
+  - **[`Reserva.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Reserva.java):**
+    - Se eliminó `cascade = CascadeType.PERSIST` de las relaciones `@ManyToOne` (`profesor`, `aula`) y `@ManyToMany` (`franjasHorarias`).
+  - **[`ReservaRepository.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/repository/ReservaRepository.java):**
+    - Se definió de forma explícita la consulta con `@Query("SELECT (COUNT(r) > 0) FROM Reserva r JOIN r.franjasHorarias f WHERE r.aula = :aula AND r.date = :date AND f IN :franjasHorarias")` con parámetros nombrados `@Param`, garantizando compatibilidad simultánea con el analizador de IntelliJ IDEA y con el motor Hibernate ORM.
+  - **[`ReservaService.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/service/ReservaService.java):**
+    - Se mantuvo el paso directo de la colección `reserva.getFranjasHorarias()` a la consulta de disponibilidad.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Causa Raíz 1 - Excepción de cascada persistente en entidad desasociada (`PersistentObjectException / InvalidDataAccessApiUsageException`):**
+    - Al enviar una reserva vía JSON con `{ "profesor": { "id": 1 }, "aula": { "id": 1 } }`, Jackson instancia objetos desasociados (*detached*) con su identificador ya poblado.
+    - Debido a `cascade = CascadeType.PERSIST`, al invocar `reservaRepository.save(reserva)`, Hibernate interpretaba que debía propagar la operación de inserción (`persist()`) a dichas entidades existentes.
+    - Según la especificación JPA, invocar `persist()` sobre una entidad desasociada que ya cuenta con clave primaria autoincremental genera `PersistentObjectException: Detached entity passed to persist: Aula/Profesor`, lo cual derivaba en el `HTTP 500`.
+    - En el modelo relacional, las reservas son entidades dependientes (*hijas*) que referencian recursos ya existentes (*padres*); por tanto, no procede aplicar cascada de persistencia hacia el aula o el profesor.
+  - **Causa Raíz 2 - Discrepancia de tipos en la consulta de solapamiento (`ClassCastException`):**
+    - El plugin de Spring Data JPA en IntelliJ evaluaba estáticamente la propiedad `List<FranjaHoraria> franjasHorarias` esperando un contenedor `Collection<List<FranjaHoraria>>`. Al empaquetarlo con `Collections.singleton()`, Hibernate en ejecución intentaba castear la lista interna como si fuera una entidad individual `FranjaHoraria`, lanzando `java.lang.ClassCastException: Cannot cast to entity type 'FranjaHoraria'`.
+    - La incorporación de `@Query` resuelve este dilema limpiamente: IntelliJ valida el tipo basándose en el alias del `JOIN` (que es `FranjaHoraria`), y Hibernate ejecuta la cláusula `f IN :franjasHorarias` sin fallos de casteo, respondiendo correctamente con `201 Created`.
+
+---
+
+## 📌 Petición 9: Seguimiento y Subida de Archivos JavaScript en Git e IntelliJ IDEA
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - El usuario consulta por qué Git no detecta el archivo `frontend/js/app.js` para ser subido a GitHub ni permite incluirlo en los commits.
+  - Diagnosticar el estado de seguimiento del archivo en Git y en el IDE IntelliJ IDEA, y proporcionar las instrucciones exactas para subirlo al repositorio remoto.
+- **Cambios Efectuados:**
+  - **[`DOC.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/DOC.md):**
+    - Se registró la consulta técnica sobre la gestión de archivos *untracked* / *unversioned* en Git e IntelliJ IDEA.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Diagnóstico del archivo en Git:**
+    1. Se verificó con `git check-ignore -v frontend/js/app.js` que el archivo **no** está ignorado por `.gitignore` ni por ninguna regla del sistema.
+    2. El archivo existe en disco con permisos de lectura correctos (`-rw-r--r--`).
+    3. `git status` muestra `frontend/js/` en estado *untracked* (sin seguimiento), ya que al haberse creado el subdirectorio y el archivo por una herramienta externa al IDE, Git no los versiona automáticamente hasta que se realiza un `git add`.
+  - **Causa en IntelliJ IDEA:**
+    - En IntelliJ, los archivos nuevos creados externamente aparecen agrupados en la sección **"Unversioned Files"** (Archivos no versionados, con color rojo o beige), separada de "Changes" (archivos ya rastreados modificados).
+    - Si al hacer el commit en IntelliJ la casilla de "Unversioned Files" permanece desmarcada (comportamiento por defecto en muchos perfiles de IntelliJ), el archivo se omite del commit y por tanto no sube a GitHub.
+  - **Solución provista:**
+    - Hacer clic derecho sobre `frontend/js/app.js` en IntelliJ -> **Git -> Add** (o `Ctrl + Alt + A`), o marcar la casilla correspondiente en la ventana de Commit.
+    - Alternativamente, ejecutar `git add frontend/js/app.js` en terminal para dejarlo preparado para commit y push.
+
 
 
 
