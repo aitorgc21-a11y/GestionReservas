@@ -383,6 +383,18 @@ body {
   border-color: var(--danger);
 }
 
+.btn-danger {
+  background: var(--danger);
+  color: #ffffff;
+  border-color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
 .btn-sm {
   padding: 0.38rem 0.75rem;
   font-size: 0.8rem;

@@ -483,6 +483,28 @@
     </div>
   </div>
 
+  <!-- Modal Confirmación de Eliminación / Acciones (Sustituye confirm() del navegador) -->
+  <div class="modal-overlay" id="modalConfirmDelete">
+    <div class="modal-window" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 id="modalConfirmDeleteTitle">🗑️ Confirmar Eliminación</h3>
+        <button class="modal-close" data-close="modalConfirmDelete">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modalConfirmDeleteMessage" style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.75rem;">
+          ¿Estás seguro de que deseas eliminar este elemento?
+        </p>
+        <div id="modalConfirmDeleteWarning" class="explanation-box" style="display: none; margin-bottom: 1rem; border-left-color: var(--warning); color: #fde68a;">
+          ⚠️ <strong>Aviso de integridad:</strong> Si este registro tiene reservas asociadas, la base de datos MariaDB rechazará la eliminación.
+        </div>
+        <div class="modal-footer" style="padding: 0; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-outline" data-close="modalConfirmDelete">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmDeleteAction">🗑️ Confirmar y Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Contenedor flotante de Notificaciones Toast -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 

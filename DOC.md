@@ -208,6 +208,26 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
 
 ---
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🛑 CORTE DE FASE: DEPURACIÓN INTEGRAL DE BACKEND, PERSISTENCIA Y RESOLUCIÓN DE ERRORES
+# ═══════════════════════════════════════════════════════════════════════════════
+> ### ⚠️ AVISO DE TRANSICIÓN METODOLÓGICA:
+> **A partir de este punto exacto (Petición 8 en adelante), las peticiones del usuario han sido completamente sobre el BACKEND, la persistencia relacional con Spring Data JPA / Hibernate, el comportamiento de la base de datos MariaDB y la resolución de incidencias y errores que han ido surgiendo durante las pruebas de integración en tiempo de ejecución.**
+>
+> **Hito previo consolidado (Peticiones 1 a 7 - Fase I):**
+> Quedaron formalmente implementados y auditados todos los requisitos funcionales del enunciado oficial de la práctica:
+> 1. Especificación 1: Entidades JPA y controladores CRUD completos.
+> 2. Especificación 2: Consultas filtradas de aulas con `@RequestParam`.
+> 3. Especificación 3: Validaciones de reservas (fechas no pasadas y franjas libres).
+> 4. Especificación 4: Frontend ligero e interactivo en `/frontend` (HTML5, CSS3 y JS vanilla).
+> 5. Especificación 5: Documentación técnica completa.
+>
+> **Fase iniciada a partir de aquí (Peticiones 8 a 13 - Fase II):**
+> Las consultas se centran en el análisis profundo del servidor, depuración de logs en consola, resolución de códigos de estado HTTP anómalos (`500 Internal Server Error`, `400 Bad Request`, `409 Conflict`), restricciones de claves foráneas (*Foreign Keys*) e interceptación de tráfico de red.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+---
+
 ## 📌 Petición 8: Diagnóstico y Resolución del Error 500 al Crear Reservas
 
 - **Fecha:** 22 de octubre de 2026
@@ -317,3 +337,44 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
   - **Causa 4: Reservas preexistentes de pruebas anteriores o demo:**
     - La consulta de solapamiento comprueba franjas horarias a nivel de base de datos. Si el aula y la franja horaria elegidas coincidían con una reserva insertada previamente en la tabla `reserva_franjas_horarias`, la validación retorna `ocupada = true`.
   - Con las trazas añadidas en `ReservaService` y `ReservaController`, el alumno puede observar en la consola de IntelliJ el motivo exacto por el que se rechaza cualquier reserva.
+
+---
+
+## 📌 Petición 12: Corrección del Error de Eliminación en Frontend y Sustitución de Diálogos Nativos por Modal de Confirmación
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - El usuario reporta un fallo en el frontend: al pulsar el icono o botón de eliminar en cualquier registro (reservas, aulas, profesores o franjas horarias), la aplicación no elimina el dato ni muestra ningún tipo de mensaje, incluso en registros que no tienen reservas asociadas (como un profesor recién creado).
+  - Analizar las causas del fallo en la interfaz de usuario y solventarlo de forma limpia y moderna.
+- **Cambios Efectuados:**
+  - **[`frontend/index.html`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/index.html):**
+    - Se incorporó el nuevo modal de confirmación `modalConfirmDelete` (`#modalConfirmDeleteTitle`, `#modalConfirmDeleteMessage`, `#modalConfirmDeleteWarning` y `#btnConfirmDeleteAction`), eliminando la dependencia de la función nativa y síncrona `window.confirm()`.
+  - **[`frontend/css/styles.css`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/css/styles.css):**
+    - Se definieron las clases `.btn-danger` y `.btn-danger:hover` para estilizar coherentemente los botones de confirmación de borrado en tonos carmesí/rojo con soporte de sombreado y transición suave.
+  - **[`frontend/js/app.js`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/frontend/js/app.js):**
+    - Se implementó la función gestora `requestConfirmAction({ title, message, warning, btnText, onConfirm })` que muestra el modal personalizado sin bloquear el hilo principal de JavaScript ni depender del navegador.
+    - Se adaptaron las funciones de eliminación (`confirmDeleteReserva`, `deleteAula`, `deleteProfesor`, `deleteFranja`) y la carga de datos de prueba (`seedDemoData`) para invocar el nuevo modal visual.
+    - Se añadió `type="button"` a todos los botones de borrado generados dinámicamente en tablas y tarjetas para evitar comportamientos accidentales de envío de formulario.
+    - Se expusieron explícitamente en el objeto global `window` todas las funciones de acción de la interfaz (`window.deleteProfesor = deleteProfesor`, etc.) para asegurar compatibilidad total con los manejadores inline `onclick`.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Causa Raíz del Bloqueo Silencioso (`window.confirm`):**
+    - Las implementaciones anteriores utilizaban `if (!confirm(...)) return;` como paso previo a emitir la llamada `apiFetch(..., { method: 'DELETE' })`.
+    - En entornos de previsualización integrados como el **Built-in Preview de IntelliJ IDEA** (basado en JCEF / Java Chromium Embedded Framework) o en navegadores donde el usuario ha marcado la casilla de suprimir diálogos emergentes, la llamada a `window.confirm()` devuelve de forma inmediata `false` sin pintar ninguna ventana en pantalla.
+    - Como consecuencia, la condición de retorno se cumplía inmediatamente: la función finalizaba en la primera línea sin emitir la petición HTTP, sin mostrar notificaciones toast y sin añadir trazas al inspector, dando la impresión de que el botón no respondía.
+    - La sustitución por un modal propio en HTML/CSS garantiza que la confirmación se muestre siempre con el mismo estilo visual oscuro del proyecto, independientemente del navegador o motor de renderizado utilizado.
+
+---
+
+## 📌 Petición 13: Delimitación Estructural de Fases en DOC.md (Transición a Depuración del Backend)
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - Realizar una delimitación (*corte*) visible y formal en el archivo `DOC.md` en el punto exacto que indique que, a partir de ese momento, las peticiones del usuario han sido completamente sobre el backend y los errores que han ido surgiendo.
+- **Cambios Efectuados:**
+  - **[`DOC.md`](file:///media/usumaniana/CORSAIR%201TB/Formación/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2º%20Año/PDAU/UT1/Practicas/GestionReservas/DOC.md):**
+    - Se insertó un bloque destacado de separación entre la **Petición 7** (donde se culminó el desarrollo funcional exigido por el enunciado, incluyendo el frontend ligero en `/frontend`) y la **Petición 8** (donde comenzaron las pruebas de integración en vivo y surgieron los errores de backend).
+    - Se detalló en dicho bloque el hito previo consolidado (Fase I: implementación de las 5 especificaciones) y la naturaleza de la fase posterior (Fase II: depuración profunda del backend, persistencia con Hibernate/MariaDB, claves foráneas y resolución de incidencias en códigos HTTP 500, 400 y 409).
+- **Información Relevante y Decisiones Técnicas:**
+  - **Ubicación exacta del corte:**
+    - El punto cronológico y técnico de transición es inmediatamente posterior a la **Petición 7**. Hasta esa petición, las tareas consistieron en la construcción y estructuración de los requisitos de la práctica (controladores, endpoints, consultas `@RequestParam` y la creación de la interfaz web en `/frontend`).
+    - A partir de la **Petición 8**, el usuario comenzó a ejecutar el proyecto en su conjunto, interactuando con la API y detectando los problemas reales de persistencia y lógica (cascada de entidades desasociadas, formato de consultas JPQL, desfase horario UTC/local y restricciones de clave foránea en la base de datos). El corte señaliza con precisión este cambio de enfoque para el profesor y el evaluador.

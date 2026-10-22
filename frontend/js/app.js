@@ -254,7 +254,7 @@ async function loadReservas() {
           <td>${franjasHtml}</td>
           <td><small class="date-badge" title="Asignado por @PrePersist">⚡ ${insertion}</small></td>
           <td style="text-align: center;">
-            <button class="btn btn-danger-outline btn-sm" onclick="confirmDeleteReserva(${r.id})" title="Eliminar reserva">
+            <button type="button" class="btn btn-danger-outline btn-sm" onclick="confirmDeleteReserva(${r.id})" title="Eliminar reserva">
               🗑️ Borrar
             </button>
           </td>
@@ -322,7 +322,7 @@ async function loadAulas(queryString = '') {
             <button class="btn btn-outline btn-sm" onclick="prepararReservaConAula(${a.id})">
               📅 Reservar
             </button>
-            <button class="btn btn-danger-outline btn-sm" onclick="deleteAula(${a.id})">
+            <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteAula(${a.id})" title="Eliminar aula">
               🗑️
             </button>
           </div>
@@ -371,7 +371,7 @@ async function loadProfesores() {
         <td>${escapeHtml(p.telefono || '--')}</td>
         <td>${p.birthDate || '--'}</td>
         <td style="text-align: center;">
-          <button class="btn btn-danger-outline btn-sm" onclick="deleteProfesor(${p.id})">
+          <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteProfesor(${p.id})" title="Eliminar profesor">
             🗑️ Borrar
           </button>
         </td>
@@ -423,7 +423,7 @@ async function loadFranjas() {
         </div>
         <div class="card-footer">
           <span style="font-size: 0.78rem; color: var(--text-muted);">Franja para reservas de aula</span>
-          <button class="btn btn-danger-outline btn-sm" onclick="deleteFranja(${f.id})">
+          <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteFranja(${f.id})" title="Eliminar franja horaria">
             🗑️
           </button>
         </div>
@@ -539,22 +539,63 @@ async function handleCrearReserva(e) {
   }
 }
 
-async function confirmDeleteReserva(id) {
-  if (!confirm(`¿Estás seguro de que deseas eliminar la reserva #${id}?`)) return;
+// Variable global para la acción de confirmación pendiente
+let pendingConfirmAction = null;
 
-  try {
-    const res = await apiFetch(`/reservas/${id}`, { method: 'DELETE' });
-    if (res.status === 204) {
-      showToast(`Reserva #${id} eliminada correctamente`, 'success');
-      await loadReservas();
-    } else if (res.status === 404) {
-      showToast(`La reserva #${id} no existe en el sistema`, 'warning');
-    } else {
-      showToast(`Error inesperado (${res.status}) al eliminar`, 'danger');
-    }
-  } catch (error) {
-    showToast(`Error de red al eliminar reserva: ${error.message}`, 'danger');
+/**
+ * Abre el modal personalizado de confirmación de eliminación o acciones críticas.
+ * Evita el uso de window.confirm(), solucionando el problema en el Built-in Preview de IntelliJ
+ * y en navegadores donde los diálogos nativos están deshabilitados o bloqueados.
+ */
+function requestConfirmAction({ title, message, warning, btnText = '🗑️ Confirmar y Eliminar', onConfirm }) {
+  const modal = document.getElementById('modalConfirmDelete');
+  if (!modal) {
+    if (typeof onConfirm === 'function') onConfirm();
+    return;
   }
+
+  document.getElementById('modalConfirmDeleteTitle').textContent = title || '🗑️ Confirmar Eliminación';
+  document.getElementById('modalConfirmDeleteMessage').textContent = message || '¿Estás seguro de que deseas eliminar este elemento?';
+
+  const warningEl = document.getElementById('modalConfirmDeleteWarning');
+  if (warning) {
+    warningEl.style.display = 'block';
+    warningEl.innerHTML = warning;
+  } else {
+    warningEl.style.display = 'none';
+  }
+
+  const confirmBtn = document.getElementById('btnConfirmDeleteAction');
+  if (confirmBtn) {
+    confirmBtn.textContent = btnText;
+  }
+
+  pendingConfirmAction = onConfirm;
+  openModal('modalConfirmDelete');
+}
+
+function confirmDeleteReserva(id) {
+  requestConfirmAction({
+    title: '🗑️ Eliminar Reserva',
+    message: `¿Estás seguro de que deseas eliminar la reserva #${id}?`,
+    warning: null,
+    btnText: '🗑️ Eliminar Reserva',
+    onConfirm: async () => {
+      try {
+        const res = await apiFetch(`/reservas/${id}`, { method: 'DELETE' });
+        if (res.status === 204) {
+          showToast(`Reserva #${id} eliminada correctamente`, 'success');
+          await loadReservas();
+        } else if (res.status === 404) {
+          showToast(`La reserva #${id} no existe en el sistema`, 'warning');
+        } else {
+          showToast(`Error inesperado (${res.status}) al eliminar`, 'danger');
+        }
+      } catch (error) {
+        showToast(`Error de red al eliminar reserva: ${error.message}`, 'danger');
+      }
+    }
+  });
 }
 
 // ==========================================================================
@@ -617,22 +658,33 @@ async function handleCrearAula(e) {
   }
 }
 
-async function deleteAula(id) {
-  if (!confirm(`¿Eliminar aula #${id}? Si tiene reservas asociadas la base de datos podría impedirlo.`)) return;
+function deleteAula(id) {
+  const aula = STATE.aulas.find(a => a.id === id);
+  const nombre = aula && aula.name ? aula.name : `#${id}`;
 
-  try {
-    const res = await apiFetch(`/aulas/${id}`, { method: 'DELETE' });
-    if (res.status === 204) {
-      showToast(`Aula #${id} eliminada correctamente`, 'success');
-      await loadAulas();
-    } else if (res.status === 409 || res.status === 500) {
-      showToast(`No se puede eliminar el aula #${id}: tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
-    } else {
-      showToast(`No se pudo eliminar el aula (${res.status})`, 'danger');
+  requestConfirmAction({
+    title: '🗑️ Eliminar Aula',
+    message: `¿Estás seguro de que deseas eliminar el aula "${escapeHtml(nombre)}" (ID: #${id})?`,
+    warning: '⚠️ <strong>Integridad Referencial:</strong> Si el aula tiene reservas asociadas, la base de datos MariaDB impedirá su eliminación para mantener la consistencia.',
+    btnText: '🗑️ Eliminar Aula',
+    onConfirm: async () => {
+      try {
+        const res = await apiFetch(`/aulas/${id}`, { method: 'DELETE' });
+        if (res.status === 204) {
+          showToast(`Aula "${nombre}" eliminada correctamente`, 'success');
+          await loadAulas();
+        } else if (res.status === 409 || res.status === 500) {
+          showToast(`No se puede eliminar el aula "${nombre}": tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
+        } else if (res.status === 404) {
+          showToast(`El aula #${id} no existe en el sistema`, 'warning');
+        } else {
+          showToast(`No se pudo eliminar el aula (${res.status})`, 'danger');
+        }
+      } catch (error) {
+        showToast(`Error al eliminar aula: ${error.message}`, 'danger');
+      }
     }
-  } catch (error) {
-    showToast(`Error al eliminar: ${error.message}`, 'danger');
-  }
+  });
 }
 
 // ==========================================================================
@@ -669,22 +721,33 @@ async function handleCrearProfesor(e) {
   }
 }
 
-async function deleteProfesor(id) {
-  if (!confirm(`¿Eliminar profesor #${id}? Si tiene reservas asociadas la base de datos lo impedirá.`)) return;
+function deleteProfesor(id) {
+  const prof = STATE.profesores.find(p => p.id === id);
+  const nombre = prof ? `${prof.name} ${prof.surname}` : `#${id}`;
 
-  try {
-    const res = await apiFetch(`/profesores/${id}`, { method: 'DELETE' });
-    if (res.status === 204) {
-      showToast(`Profesor #${id} eliminado correctamente`, 'success');
-      await loadProfesores();
-    } else if (res.status === 409 || res.status === 500) {
-      showToast(`No se puede eliminar el profesor #${id}: tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
-    } else {
-      showToast(`No se pudo eliminar el profesor (${res.status})`, 'danger');
+  requestConfirmAction({
+    title: '🗑️ Eliminar Profesor',
+    message: `¿Estás seguro de que deseas eliminar al profesor "${escapeHtml(nombre)}" (ID: #${id})?`,
+    warning: '⚠️ <strong>Integridad Referencial:</strong> Si el profesor tiene reservas registradas, la base de datos MariaDB impedirá su eliminación.',
+    btnText: '🗑️ Eliminar Profesor',
+    onConfirm: async () => {
+      try {
+        const res = await apiFetch(`/profesores/${id}`, { method: 'DELETE' });
+        if (res.status === 204) {
+          showToast(`Profesor "${nombre}" eliminado correctamente`, 'success');
+          await loadProfesores();
+        } else if (res.status === 409 || res.status === 500) {
+          showToast(`No se puede eliminar el profesor "${nombre}": tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
+        } else if (res.status === 404) {
+          showToast(`El profesor #${id} no existe en el sistema`, 'warning');
+        } else {
+          showToast(`No se pudo eliminar el profesor (${res.status})`, 'danger');
+        }
+      } catch (error) {
+        showToast(`Error al eliminar profesor: ${error.message}`, 'danger');
+      }
     }
-  } catch (error) {
-    showToast(`Error: ${error.message}`, 'danger');
-  }
+  });
 }
 
 async function handleCrearFranja(e) {
@@ -717,32 +780,52 @@ async function handleCrearFranja(e) {
   }
 }
 
-async function deleteFranja(id) {
-  if (!confirm(`¿Eliminar franja horaria #${id}? Si tiene reservas asociadas la base de datos lo impedirá.`)) return;
+function deleteFranja(id) {
+  const franja = STATE.franjas.find(f => f.id === id);
+  const horario = franja ? `${formatHora(franja.desde)} - ${formatHora(franja.hasta)}` : `#${id}`;
 
-  try {
-    const res = await apiFetch(`/franjas-horarias/${id}`, { method: 'DELETE' });
-    if (res.status === 204) {
-      showToast(`Franja #${id} eliminada correctamente`, 'success');
-      await loadFranjas();
-    } else if (res.status === 409 || res.status === 500) {
-      showToast(`No se puede eliminar la franja #${id}: tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
-    } else {
-      showToast(`No se pudo eliminar franja (${res.status})`, 'danger');
+  requestConfirmAction({
+    title: '🗑️ Eliminar Franja Horaria',
+    message: `¿Estás seguro de que deseas eliminar el periodo lectivo ${horario} (ID: #${id})?`,
+    warning: '⚠️ <strong>Integridad Referencial:</strong> Si esta franja horaria está vinculada a reservas existentes, la base de datos impedirá su borrado.',
+    btnText: '🗑️ Eliminar Franja',
+    onConfirm: async () => {
+      try {
+        const res = await apiFetch(`/franjas-horarias/${id}`, { method: 'DELETE' });
+        if (res.status === 204) {
+          showToast(`Franja #${id} eliminada correctamente`, 'success');
+          await loadFranjas();
+        } else if (res.status === 409 || res.status === 500) {
+          showToast(`No se puede eliminar la franja #${id}: tiene reservas asociadas. Elimina primero sus reservas asociadas.`, 'warning');
+        } else if (res.status === 404) {
+          showToast(`La franja #${id} no existe en el sistema`, 'warning');
+        } else {
+          showToast(`No se pudo eliminar franja (${res.status})`, 'danger');
+        }
+      } catch (error) {
+        showToast(`Error al eliminar franja: ${error.message}`, 'danger');
+      }
     }
-  } catch (error) {
-    showToast(`Error: ${error.message}`, 'danger');
-  }
+  });
 }
 
 // ==========================================================================
 // 7. CARGA DE DATOS DEMO (SEEDER RÁPIDO PARA GRABACIÓN DE VÍDEO)
 // ==========================================================================
 
-async function seedDemoData() {
-  if (!confirm('¿Deseas insertar datos de prueba iniciales (2 profesores, 3 aulas, 3 franjas y 1 reserva)? Ideal si la base de datos está vacía.')) {
-    return;
-  }
+function seedDemoData() {
+  requestConfirmAction({
+    title: '⚡ Cargar Datos Demo',
+    message: '¿Deseas insertar datos de prueba iniciales (2 profesores, 3 aulas, 3 franjas y 1 reserva)? Ideal si la base de datos está vacía.',
+    warning: 'ℹ️ Se crearán registros iniciales en MariaDB para facilitar las pruebas de la práctica.',
+    btnText: '⚡ Sí, Cargar Demo',
+    onConfirm: async () => {
+      await executeSeedDemoData();
+    }
+  });
+}
+
+async function executeSeedDemoData() {
 
   showToast('Cargando datos de demostración en Spring Boot...', 'info');
 
@@ -1093,6 +1176,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnClearLogs').addEventListener('click', clearLogs);
   document.getElementById('btnSeedData').addEventListener('click', seedDemoData);
 
+  // Botón de confirmación de eliminación en el modal modalConfirmDelete
+  const btnConfirmDelete = document.getElementById('btnConfirmDeleteAction');
+  if (btnConfirmDelete) {
+    btnConfirmDelete.addEventListener('click', async () => {
+      closeModal('modalConfirmDelete');
+      if (typeof pendingConfirmAction === 'function') {
+        const action = pendingConfirmAction;
+        pendingConfirmAction = null;
+        await action();
+      }
+    });
+  }
+
   // Formulario configuración API
   document.getElementById('formConfigApi').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1112,3 +1208,20 @@ document.addEventListener('DOMContentLoaded', () => {
   checkApiConnection();
   loadAllData();
 });
+
+// ==========================================================================
+// 12. EXPOSICIÓN GLOBAL EN WINDOW
+// ==========================================================================
+// Garantiza que los handlers definidos en onclick de HTML (tablas, tarjetas)
+// encuentren siempre su función en cualquier navegador o entorno embebido.
+window.confirmDeleteReserva = confirmDeleteReserva;
+window.deleteAula = deleteAula;
+window.deleteProfesor = deleteProfesor;
+window.deleteFranja = deleteFranja;
+window.prepararReservaConAula = prepararReservaConAula;
+window.openModalReserva = openModalReserva;
+window.selectLog = selectLog;
+window.seedDemoData = seedDemoData;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.showToast = showToast;
