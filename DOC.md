@@ -172,7 +172,30 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
 
 ---
 
-## 📌 Petición 7: Implementación del Frontend Ligero y Optimización de la Serialización JSON
+## 📌 Petición 8: Diagnóstico y Resolución del Error 500 al Crear Reservas
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - El usuario reporta que al crear una reserva con datos válidos desde la aplicación, el servidor responde con un código de error HTTP `500 Internal Server Error`.
+  - Investigar la causa raíz de dicho fallo, corregirlo y explicar por qué se producía.
+  - Asegurar la compatibilidad con el entorno de inspección de IntelliJ IDEA sin generar advertencias estáticas ni excepciones en tiempo de ejecución.
+- **Cambios Efectuados:**
+  - **[`Reserva.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Reserva.java):**
+    - Se eliminó `cascade = CascadeType.PERSIST` de las relaciones `@ManyToOne` (`profesor`, `aula`) y `@ManyToMany` (`franjasHorarias`).
+  - **[`ReservaRepository.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/repository/ReservaRepository.java):**
+    - Se definió de forma explícita la consulta con `@Query("SELECT (COUNT(r) > 0) FROM Reserva r JOIN r.franjasHorarias f WHERE r.aula = :aula AND r.date = :date AND f IN :franjasHorarias")` con parámetros nombrados `@Param`, garantizando compatibilidad simultánea con el analizador de IntelliJ IDEA y con el motor Hibernate ORM.
+  - **[`ReservaService.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/service/ReservaService.java):**
+    - Se mantuvo el paso directo de la colección `reserva.getFranjasHorarias()` a la consulta de disponibilidad.
+- **Información Relevante y Decisiones Técnicas:**
+  - **Causa Raíz 1 - Excepción de cascada persistente en entidad desasociada (`PersistentObjectException / InvalidDataAccessApiUsageException`):**
+    - Al enviar una reserva vía JSON con `{ "profesor": { "id": 1 }, "aula": { "id": 1 } }`, Jackson instancia objetos desasociados (*detached*) con su identificador ya poblado.
+    - Debido a `cascade = CascadeType.PERSIST`, al invocar `reservaRepository.save(reserva)`, Hibernate interpretaba que debía propagar la operación de inserción (`persist()`) a dichas entidades existentes.
+    - Según la especificación JPA, invocar `persist()` sobre una entidad desasociada que ya cuenta con clave primaria autoincremental genera `PersistentObjectException: Detached entity passed to persist: Aula/Profesor`, lo cual derivaba en el `HTTP 500`.
+    - En el modelo relacional, las reservas son entidades dependientes (*hijas*) que referencian recursos ya existentes (*padres*); por tanto, no procede aplicar cascada de persistencia hacia el aula o el profesor.
+  - **Causa Raíz 2 - Discrepancia de tipos en la consulta de solapamiento (`ClassCastException`):**
+    - El plugin de Spring Data JPA en IntelliJ evaluaba estáticamente la propiedad `List<FranjaHoraria> franjasHorarias` esperando un contenedor `Collection<List<FranjaHoraria>>`. Al empaquetarlo con `Collections.singleton()`, Hibernate en ejecución intentaba castear la lista interna como si fuera una entidad individual `FranjaHoraria`, lanzando `java.lang.ClassCastException: Cannot cast to entity type 'FranjaHoraria'`.
+    - La incorporación de `@Query` resuelve este dilema limpiamente: IntelliJ valida el tipo basándose en el alias del `JOIN` (que es `FranjaHoraria`), y Hibernate ejecuta la cláusula `f IN :franjasHorarias` sin fallos de casteo, respondiendo correctamente con `201 Created`.
+
 
 - **Fecha:** 22 de octubre de 2026
 - **Resumen de la Petición:**

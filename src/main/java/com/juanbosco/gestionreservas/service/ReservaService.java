@@ -5,7 +5,6 @@ import com.juanbosco.gestionreservas.repository.ReservaRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
 @Service
 public class ReservaService {
@@ -33,7 +32,7 @@ public class ReservaService {
             boolean ocupada = reservaRepository.existsByAulaAndDateAndFranjasHorariasIn(
                     reserva.getAula(),
                     reserva.getDate(),
-                    Collections.singleton(reserva.getFranjasHorarias())
+                    reserva.getFranjasHorarias()
             );
             return !ocupada; // La franja ya está ocupada
         }

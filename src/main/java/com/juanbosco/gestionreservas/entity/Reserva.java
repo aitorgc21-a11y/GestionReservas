@@ -29,17 +29,17 @@ public class Reserva {
     private LocalDate date;
 
     // Varias Reservas pueden ser hechas por un profesor
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JsonIgnoreProperties("reserva")
     private Profesor profesor;
 
     // Varias reservas pueden ser de un Aula
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JsonIgnoreProperties("reservas")
     private Aula aula;
 
     // Varias reservas pueden tener varias franjas horarias
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany
     @JsonIgnoreProperties("reservas")
     private List<FranjaHoraria> franjasHorarias;
 
