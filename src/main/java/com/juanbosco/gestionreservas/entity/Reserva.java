@@ -39,4 +39,12 @@ public class Reserva {
     @ManyToMany(cascade = CascadeType.PERSIST)
     private List<FranjaHoraria> franjasHorarias;
 
+    // Asignación automática de fecha y hora de inserción en la propia entidad (requisito del enunciado)
+    @PrePersist
+    public void prePersist() {
+        if (this.insertionDate == null) {
+            this.insertionDate = LocalDateTime.now();
+        }
+    }
+
 }

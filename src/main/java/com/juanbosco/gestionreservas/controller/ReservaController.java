@@ -42,15 +42,17 @@ public class ReservaController {
     // POST http://localhost:8080/reservas --> Crea una reserva
     @PostMapping()
     public ResponseEntity<Reserva> create(@RequestBody Reserva reserva) {
-        // Si la reserva no es válida, se devuelve un Bad Request
-        if (reservaService.valida(reserva)) {
+        // Al crear, el ID no debe venir especificado (se genera automáticamente)
+        if (reserva.getId() != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        // Se aplica la fecha de inserción a la reserva
-        reserva.setInsertionDate(LocalDateTime.now());
+        // Si la reserva no cumple las validaciones de negocio, devuelve 400 Bad Request
+        if (!reservaService.valida(reserva)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
 
-        // Se devuelve el resultado correct y la reserva
+        // Se persiste la reserva (la insertionDate se completa automáticamente en la entidad con @PrePersist)
         return ResponseEntity.status(HttpStatus.CREATED).body(reservaRepository.save(reserva));
     }
 

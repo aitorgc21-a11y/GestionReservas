@@ -5,7 +5,6 @@ import com.juanbosco.gestionreservas.repository.ReservaRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
 @Service
 public class ReservaService {
@@ -18,19 +17,27 @@ public class ReservaService {
 
     public boolean valida(Reserva reserva) {
 
-        // Si no tiene fecha, no es válida
-        if (reserva.getDate() == null) return false;
+        // Si no tiene fecha o no tiene aula asignada, no es válida
+        if (reserva.getDate() == null || reserva.getAula() == null) {
+            return false;
+        }
 
-        // Si la fecha que tiene es anterior a la fecha actual, no es válida
-        if (reserva.getDate().isBefore(LocalDate.now())) return false;
+        // Si la fecha de la reserva es anterior a la fecha actual, no es válida
+        if (reserva.getDate().isBefore(LocalDate.now())) {
+            return false;
+        }
 
-        // Si ya existe alguna reserva para ese id, aula, fecha y franjas, devuelve false (no válida)
-        return !reservaRepository.existsByIdAndAulaAndDateAndFranjasHorariasIn(
-                reserva.getId(),
-                reserva.getAula(),
-                reserva.getDate(),
-                Collections.singleton(reserva.getFranjasHorarias())
-        );
+        // Comprobación de disponibilidad de franja horaria para el aula y fecha indicadas
+        if (reserva.getFranjasHorarias() != null && !reserva.getFranjasHorarias().isEmpty()) {
+            boolean ocupada = reservaRepository.existsByAulaAndDateAndFranjasHorariasIn(
+                    reserva.getAula(),
+                    reserva.getDate(),
+                    reserva.getFranjasHorarias()
+            );
+            return !ocupada; // La franja ya está ocupada
+        }
+
+        return true;
     }
 
 }

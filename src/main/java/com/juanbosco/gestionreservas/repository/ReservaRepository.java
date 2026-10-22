@@ -10,10 +10,10 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
-    boolean existsByIdAndAulaAndDateAndFranjasHorariasIn(
-            Long id,
+    // Comprueba si ya existe una reserva para la misma aula, misma fecha y alguna de las franjas horarias indicadas
+    boolean existsByAulaAndDateAndFranjasHorariasIn(
             Aula aula,
             LocalDate date,
-            Collection<List<FranjaHoraria>> franjasHorarias
+            Collection<FranjaHoraria> franjasHorarias
     );
 }

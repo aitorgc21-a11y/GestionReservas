@@ -1,30 +1,27 @@
 # Sistema de Gestión de Reservas de Aulas
 
-[![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-21%2B%20%2F%2025-orange.svg)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x%20%2F%204.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Database](https://img.shields.io/badge/Database-MariaDB%20%2F%20MySQL-blue.svg)](https://mariadb.org/)
 [![Lombok](https://img.shields.io/badge/Lombok-Enabled-red.svg)](https://projectlombok.org/)
 
-Proyecto desarrollado para el módulo de **Acceso a Datos** del 2.º curso del Ciclo Formativo de Grado Superior en **Desarrollo de Aplicaciones Multiplataforma (DAM)**.
+Proyecto desarrollado para el módulo de **Acceso a Datos** de 2.º curso de **Desarrollo de Aplicaciones Multiplataforma (DAM)**.
 
 ---
 
 ## 📌 1. Descripción del Proyecto
 
-El sistema es una **API RESTful** construida con **Spring Boot**, **Spring Data JPA (Hibernate)**, **MariaDB** y **Lombok**, orientada a gestionar la ocupación, disponibilidad y reserva de espacios en un centro educativo.
+API RESTful orientada a gestionar la asignación, disponibilidad y reserva de espacios en un centro educativo.
 
-Permite administrar:
-- **Profesores:** Docentes autorizados para reservar aulas y recursos.
-- **Aulas:** Espacios físicos con atributos como capacidad, planta y dotación de ordenadores.
-- **Franjas Horarias:** Intervalos de tiempo lectivo (`hora inicio` y `hora fin`) configurables.
-- **Reservas:** Asignaciones que vinculan un profesor, un aula, una fecha específica y una o varias franjas horarias, garantizando que no existan conflictos ni solapamientos.
-- **Frontend (en desarrollo):** Interfaz web ligera construida exclusivamente con **HTML5, CSS3 y JavaScript vanilla** (sin frameworks externos) alojada en `/frontend`.
+El sistema administra:
+- **Profesores:** Docentes autorizados para realizar reservas.
+- **Aulas:** Espacios físicos con información de capacidad, planta y dotación de equipos informáticos.
+- **Franjas Horarias:** Intervalos de horas lectivas predefinidas (`desde` y `hasta`).
+- **Reservas:** Asignaciones de un aula a un profesor en una fecha y franja horaria determinada, impidiendo solapamientos.
 
 ---
 
-## 🏗️ 2. Arquitectura y Modelo de Datos
-
-El diseño de la base de datos se basa en el modelo entidad-relación definido para el centro educativo:
+## 🏗️ 2. Modelo de Datos y Arquitectura
 
 ```mermaid
 erDiagram
@@ -36,7 +33,7 @@ erDiagram
         Long id PK
         String name
         String surname
-        String email
+        String email UK
         LocalDate birthDate
         String dni UK
         String telefono
@@ -45,16 +42,16 @@ erDiagram
     AULA {
         Long id PK
         String name
-        boolean ordenadores
-        int capacity
-        int floor
+        Boolean ordenadores
+        Integer capacity
+        Integer floor
         String description
     }
 
     FRANJA_HORARIA {
         Long id PK
-        LocalTime from
-        LocalTime to
+        LocalTime desde
+        LocalTime hasta
     }
 
     RESERVA {
@@ -66,175 +63,119 @@ erDiagram
     }
 ```
 
-*Nota: El diagrama conceptual original se encuentra disponible en [BBDD.png](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/BBDD.png).*
-
 ---
 
-## 📁 3. Estructura del Repositorio
-
-```text
-GestionReservas/
-├── pom.xml                                      # Configuración Maven y dependencias
-├── HELP.md                                      # Guía genérica generada por Spring Initializr
-├── README.md                                    # Documentación principal del proyecto
-├── DOC.md                                       # Bitácora de desarrollo con IA, prompts, errores y decisiones
-├── AGENTS.md                                    # Contexto técnico, directrices y reglas para agentes de IA
-├── Enunciado.odt                                # Enunciado oficial de la práctica (Tarea 1)
-├── BBDD.png                                     # Diagrama E/R conceptual de la base de datos
-├── src/
-│   ├── main/
-│   │   ├── java/com/juanbosco/gestionreservas/
-│   │   │   ├── GestionReservasApplication.java  # Clase principal de arranque Spring Boot
-│   │   │   ├── CorsConfig.java                  # Configuración global de CORS para consumo API
-│   │   │   ├── entity/
-│   │   │   │   ├── Profesor.java                # Entidad JPA: Docente
-│   │   │   │   ├── Aula.java                    # Entidad JPA: Aula/Espacio
-│   │   │   │   ├── FranjaHoraria.java           # Entidad JPA: Turnos y horas lectivas
-│   │   │   │   └── Reserva.java                 # Entidad JPA: Asignación de reserva
-│   │   │   ├── repository/
-│   │   │   │   ├── ProfesorRepository.java      # Interfaz JpaRepository para Profesor
-│   │   │   │   ├── AulaRepository.java          # Interfaz JpaRepository para Aula
-│   │   │   │   ├── FranjaHorariaRepository.java # Interfaz JpaRepository para FranjaHoraria
-│   │   │   │   └── ReservaRepository.java        # Interfaz JpaRepository para Reserva
-│   │   │   └── controller/
-│   │   │       ├── ProfesorController.java      # Controlador REST para gestión de profesores
-│   │   │       ├── AulaController.java          # Controlador REST para gestión de aulas
-│   │   │       ├── FranjaHorariaController.java # Controlador REST para franjas horarias
-│   │   │       └── ReservaController.java        # Controlador REST para gestión de reservas
-│   │   └── resources/
-│   │       └── application.properties           # Parámetros de conexión a MariaDB e Hibernate
-│   └── test/
-│       └── java/com/juanbosco/gestionreservas/
-│           └── GestionReservasApplicationTests.java # Tests de contexto Spring Boot
-```
-
----
-
-## ⚙️ 4. Requisitos y Configuración Local
+## ⚙️ 3. Puesta en Marcha Local
 
 ### Prerrequisitos
-- **Java Development Kit (JDK):** Versión 21 o superior (configurado para Java 25 en `pom.xml`).
-- **Gestor de Base de Datos:** MariaDB o MySQL Server en ejecución en el puerto `3306`.
-- **Maven:** No es necesario tenerlo instalado; se incluye el wrapper `./mvnw`.
+- **Java:** JDK 21 o 25 instalado.
+- **Base de datos:** MariaDB o MySQL escuchando en `localhost:3306`.
+- **Maven:** Incluido en el repositorio mediante `./mvnw`.
 
-### Configuración de la Base de Datos
-1. Iniciar el servicio MariaDB / MySQL.
-2. Crear la base de datos y usuario correspondientes (según [application.properties](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/resources/application.properties)):
-   ```sql
-   CREATE DATABASE IF NOT EXISTS app_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   CREATE USER IF NOT EXISTS 'aitor'@'localhost' IDENTIFIED BY 'aitor123';
-   GRANT ALL PRIVILEGES ON app_db.* TO 'aitor'@'localhost';
-   FLUSH PRIVILEGES;
-   ```
-3. Parámetros activos en `src/main/resources/application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:mariadb://localhost:3306/app_db
-   spring.datasource.username=aitor
-   spring.datasource.password=aitor123
-   spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+### Configuración de Base de Datos
+En `src/main/resources/application.properties`:
+```properties
+spring.datasource.url=jdbc:mariadb://localhost:3306/app_db
+spring.datasource.username=aitor
+spring.datasource.password=aitor123
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
 
-   spring.jpa.hibernate.ddl-auto=update
-   spring.jpa.show-sql=true
-   spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MariaDBDialect
-   ```
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MariaDBDialect
+```
 
-### Ejecución de la Aplicación
-Para compilar y levantar el backend:
+### Ejecución
 ```bash
 ./mvnw clean spring-boot:run
 ```
-La aplicación quedará escuchando en `http://localhost:8080`.
+Servidor disponible en `http://localhost:8080`.
 
 ---
 
-## 🔌 5. Catálogo de Endpoints de la API
+## 🔌 4. Catálogo de Endpoints REST
 
-### Endpoints Implementados (Estado Actual)
+Todas las respuestas utilizan códigos de estado HTTP semánticos (`200 OK`, `201 Created`, `204 No Content`, `400 Bad Request`, `404 Not Found`).
 
-#### 1. Profesores (`/profesores`) - Controlador: [`ProfesorController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ProfesorController.java)
+### 1. Profesores (`/profesores`)
+| Método | Endpoint | Descripción | Códigos HTTP |
+|---|---|---|---|
+| `GET` | `/profesores` | Lista todos los profesores | `200` |
+| `GET` | `/profesores/{id}` | Obtiene profesor por ID | `200`, `404` |
+| `POST` | `/profesores` | Crea un profesor | `201`, `400` |
+| `PUT` | `/profesores/{id}` | Actualización completa de profesor | `200`, `404` |
+| `PATCH` | `/profesores/{id}` | Actualización parcial de campos | `200`, `404` |
+| `DELETE` | `/profesores/{id}` | Elimina profesor por ID | `204`, `404` |
 
-| Método   | Endpoint           | Descripción                            | Código Éxito     | Códigos Error        |
-|----------|--------------------|----------------------------------------|------------------|----------------------|
-| `GET`    | `/profesores`      | Lista todos los profesores registrados | `200 OK`         | `500 Internal Error` |
-| `GET`    | `/profesores/{id}` | Recupera un profesor por su ID         | `200 OK`         | `404 Not Found`      |
-| `POST`   | `/profesores`      | Registra un nuevo profesor             | `201 Created`    | `400 Bad Request`    |
-| `PUT`    | `/profesores/{id}` | Actualización completa de un profesor  | `200 OK`         | `404 Not Found`      |
-| `PATCH`  | `/profesores/{id}` | Actualización parcial de un profesor   | `200 OK`         | `404 Not Found`      |
-| `DELETE` | `/profesores/{id}` | Elimina un profesor por su ID          | `204 No Content` | `404 Not Found`      |
+### 2. Aulas (`/aulas`) - Filtros y Consultas Especiales
+| Método | Endpoint | Descripción | Códigos HTTP |
+|---|---|---|---|
+| `GET` | `/aulas` | Lista aulas (admite filtros por query param) | `200` |
+| `GET` | `/aulas/{id}` | Obtiene aula por ID | `200`, `404` |
+| `POST` | `/aulas` | Crea un aula | `201`, `400` |
+| `PUT` | `/aulas/{id}` | Actualización completa de aula | `200`, `404` |
+| `PATCH` | `/aulas/{id}` | Actualización parcial de aula | `200`, `404` |
+| `DELETE` | `/aulas/{id}` | Elimina aula por ID | `204`, `404` |
 
-#### 2. Aulas (`/aulas`) - Controlador: [`AulaController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/AulaController.java)
+**Filtros mediante parámetros de consulta (`@RequestParam`):**
+- `/aulas?ordenadores=true`: Filtra aulas que tienen ordenadores.
+- `/aulas?capacidad=20` (o `?capacity=20`): Aulas con capacidad estrictamente superior al número indicado.
+- `/aulas?ordenadores=true&capacidad=20`: Combinación simultánea de ambos filtros.
 
-| Método   | Endpoint           | Descripción                                                                                 | Código Éxito     | Códigos Error        |
-|----------|--------------------|---------------------------------------------------------------------------------------------|------------------|----------------------|
-| `GET`    | `/aulas`           | Lista todas las aulas (soporta filtros: `?ordenadores=true`, `?capacidad=20` o combinados) | `200 OK`         | `500 Internal Error` |
-| `GET`    | `/aulas/{id}`      | Recupera un aula por su ID                                                                  | `200 OK`         | `404 Not Found`      |
-| `POST`   | `/aulas`           | Registra una nueva aula                                                                     | `201 Created`    | `400 Bad Request`    |
-| `PUT`    | `/aulas/{id}`      | Actualización completa de un aula                                                           | `200 OK`         | `404 Not Found`      |
-| `PATCH`  | `/aulas/{id}`      | Actualización parcial de un aula                                                            | `200 OK`         | `404 Not Found`      |
-| `DELETE` | `/aulas/{id}`      | Elimina un aula por su ID                                                                   | `204 No Content` | `404 Not Found`      |
+### 3. Franjas Horarias (`/franjas-horarias` / `/franjas`)
+| Método | Endpoint | Descripción | Códigos HTTP |
+|---|---|---|---|
+| `GET` | `/franjas-horarias` | Lista franjas horarias | `200` |
+| `GET` | `/franjas-horarias/{id}` | Obtiene franja por ID | `200`, `404` |
+| `POST` | `/franjas-horarias` | Crea una franja horaria (`desde`, `hasta`) | `201`, `400` |
+| `PUT` | `/franjas-horarias/{id}` | Modificación total | `200`, `404` |
+| `PATCH` | `/franjas-horarias/{id}` | Modificación parcial | `200`, `404` |
+| `DELETE` | `/franjas-horarias/{id}` | Elimina franja por ID | `204`, `404` |
 
-*Parámetros de consulta para `GET /aulas`:*
-- `ordenadores` (boolean, opcional): `/aulas?ordenadores=true` (devuelve aulas con o sin ordenadores).
-- `capacidad` o `capacity` (integer, opcional): `/aulas?capacidad=20` (devuelve aulas con capacidad estrictamente superior al valor indicado).
-- Combinación: `/aulas?ordenadores=true&capacidad=20`.
-
-#### 3. Franjas Horarias (`/franjas-horarias` / `/franjas`) - Controlador: [`FranjaHorariaController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/FranjaHorariaController.java)
-
-| Método   | Endpoint                   | Descripción                                   | Código Éxito     | Códigos Error        |
-|----------|----------------------------|-----------------------------------------------|------------------|----------------------|
-| `GET`    | `/franjas-horarias`        | Lista todas las franjas horarias registradas  | `200 OK`         | `500 Internal Error` |
-| `GET`    | `/franjas-horarias/{id}`   | Recupera una franja horaria por su ID         | `200 OK`         | `404 Not Found`      |
-| `POST`   | `/franjas-horarias`        | Registra una nueva franja horaria             | `201 Created`    | `400 Bad Request`    |
-| `PUT`    | `/franjas-horarias/{id}`   | Actualización completa de una franja horaria  | `200 OK`         | `404 Not Found`      |
-| `PATCH`  | `/franjas-horarias/{id}`   | Actualización parcial de una franja horaria   | `200 OK`         | `404 Not Found`      |
-| `DELETE` | `/franjas-horarias/{id}`   | Elimina una franja horaria por su ID          | `204 No Content` | `404 Not Found`      |
-
-#### 4. Reservas (`/reservas`) - Controlador: [`ReservaController`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ReservaController.java)
-
-| Método   | Endpoint           | Descripción                            | Código Éxito     | Códigos Error        |
-|----------|--------------------|----------------------------------------|------------------|----------------------|
-| `GET`    | `/reservas`        | Lista todas las reservas registradas   | `200 OK`         | `500 Internal Error` |
-| `GET`    | `/reservas/{id}`   | Recupera una reserva por su ID         | `200 OK`         | `404 Not Found`      |
-| `POST`   | `/reservas`        | Registra una nueva reserva             | `201 Created`    | `400 Bad Request`    |
-| `PUT`    | `/reservas/{id}`   | Actualización completa de una reserva  | `200 OK`         | `404 Not Found`      |
-| `PATCH`  | `/reservas/{id}`   | Actualización parcial de una reserva   | `200 OK`         | `404 Not Found`      |
-| `DELETE` | `/reservas/{id}`   | Elimina una reserva por su ID          | `204 No Content` | `404 Not Found`      |
+### 4. Reservas (`/reservas`) - Reglas de Negocio
+| Método | Endpoint | Descripción | Códigos HTTP |
+|---|---|---|---|
+| `GET` | `/reservas` | Lista reservas registradas | `200` |
+| `GET` | `/reservas/{id}` | Obtiene reserva por ID | `200`, `404` |
+| `POST` | `/reservas` | Inserta reserva validando disponibilidad y fecha | `201`, `400` |
+| `PUT` | `/reservas/{id}` | Modificación total de reserva | `200`, `404` |
+| `PATCH` | `/reservas/{id}` | Modificación parcial de reserva | `200`, `404` |
+| `DELETE` | `/reservas/{id}` | Elimina reserva por ID | `204`, `404` |
 
 ---
 
-### Requisitos y Lógicas Pendientes (Especificación del Enunciado)
+## 🛡️ 5. Reglas de Validación de Reservas Implementadas
 
-1. **Aulas (Apartado 2 del Enunciado):**
-   - Filtro por ordenadores: `GET /aulas?ordenadores=true`.
-   - Filtro por capacidad mínima: `GET /aulas?capacidad=20`.
-
-2. **Reservas (Apartado 3 del Enunciado):**
-   - Generación automática de `insertionDate` mediante `@PrePersist` en la entidad `Reserva`.
-   - Validación de solapamiento: impedir reservar si el aula y la franja horaria ya están reservadas en esa fecha.
-   - Validación temporal: impedir reservas con fecha anterior a la fecha actual (`LocalDate.now()`).
+En cumplimiento del apartado 3 del enunciado, al crear una reserva (`POST /reservas`):
+1. **Comprobación de solapamiento:** Mediante `ReservaService` y el método derivado `existsByAulaAndDateAndFranjasHorariasIn`, se verifica que ninguna de las franjas horarias seleccionadas esté ya reservada para la misma aula en la misma fecha.
+2. **Fecha futura:** La fecha de reserva no puede ser anterior a la fecha actual (`!date.isBefore(LocalDate.now())`).
+3. **Generación automática de auditoría:** El campo `insertionDate` se genera de forma transparente en la propia entidad `Reserva` mediante el hook `@PrePersist` (`LocalDateTime.now()`).
 
 ---
 
-## 📊 6. Estado Actual del Proyecto y Próximos Pasos
+## 🤖 6. Desarrollo Asistido por Inteligencia Artificial (Apartado 5)
 
-- [x] Inicialización del proyecto Maven con Spring Boot 4.x / Java 25.
-- [x] Configuración de dependencias (JPA, MariaDB, Lombok, DevTools).
-- [x] Modelo entidad-relación reflejado en entidades JPA (`Profesor`, `Aula`, `FranjaHoraria`, `Reserva`).
-- [x] Repositorios Spring Data JPA creados.
-- [x] Configuración de CORS habilitada (`CorsConfig`).
-- [x] Controladores REST base implementados (`ProfesorController`, `AulaController`, `FranjaHorariaController`, `ReservaController`).
-- [ ] Refactorización y corrección de validación en `ProfesorController.create`.
-- [ ] Escapado del atributo `from` en `FranjaHoraria` (`hora_inicio`).
-- [ ] Implementación de las consultas con parámetros en `AulaController` (Apartado 2).
-- [ ] Implementación de las validaciones de negocio en `ReservaController` (Apartado 3).
-- [ ] Creación del frontend estático en `/frontend` (HTML, CSS, JS vainilla).
-- [ ] Grabación de vídeo explicativo de la entrega (5 a 10 min) demostrando Postman y frontend.
+### Decisiones tomadas a partir de propuestas de la IA
+- **Soporte dual de parámetros en Aulas:** Se adaptó `AulaController` para aceptar tanto `capacidad` (del enunciado) como `capacity` (del modelo), garantizando compatibilidad con pruebas de evaluación y clientes externos.
+- **Arquitectura de Servicios:** Se desacopló la validación de negocio de reservas en `ReservaService` en lugar de sobrecargar el controlador.
+- **Inmutabilidad de identificadores:** Se estableció la regla de no permitir modificación del `id` en `PUT` y `PATCH`, preservando la integridad de clave primaria de la base de datos.
+
+### Problemas encontrados y errores corregidos
+- **Condición invertida en controlador de reservas:** En una versión previa, la llamada `if (reservaService.valida(reserva))` rechazaba peticiones válidas. Se corrigió a `if (!reservaService.valida(reserva))`.
+- **Comprobación de ID nulo en repositorio:** La consulta inicial de solapamiento comprobaba `id == null`, lo que impedía detectar colisiones con reservas ya guardadas en la base de datos. Se simplificó a `existsByAulaAndDateAndFranjasHorariasIn(Aula, LocalDate, Collection<FranjaHoraria>)`.
+- **Ciclo de vida JPA en `Reserva`:** Se movió la inicialización de `insertionDate` del controlador al método `@PrePersist` de la entidad para dar cumplimiento literal al requisito de completarse en la propia entidad.
+
+### Prompts de ejemplo utilizados
+- *"Analiza el proyecto y la clase Aula con los cambios sin commitear todavía. Lo he intentado hacer sin IA y no sé si es correcto la documentación con los endpoints ni el método de findAll con las consultas puestas. ¿Puedes verificar si es correcto o explicarme si es que lo he hecho mal y arreglarlo?"*
+- *"Quiero que analices el estado final del proyecto, me comentes si falta algo por aplicar del enunciado y que si todo es correcto, documentes en el README la información correcta y legible por humanos para este proyecto."*
 
 ---
 
-## 📚 7. Documentación Complementaria
+## 📋 7. Estado del Proyecto y Requisitos Pendientes
 
-Para una trazabilidad total y soporte en el desarrollo, este proyecto incluye:
-
-- 📄 **[AGENTS.md](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/AGENTS.md):** Guía exhaustiva de contexto para agentes de Inteligencia Artificial, detalle de todos los archivos del repositorio, contratos de API y directrices técnicas.
-- 📝 **[DOC.md](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/DOC.md):** Bitácora de desarrollo asistido por IA (registro estructurado de las peticiones del usuario, cambios efectuados, decisiones técnicas e información relevante de cada intervención).
+- [x] **Especificación 1:** Entidades JPA, repositorios, controladores CRUD y `@PrePersist` en `Reserva`.
+- [x] **Especificación 2:** Filtros de aulas por `ordenadores` y `capacidad` (`@RequestParam`).
+- [x] **Especificación 3:** Validaciones de franjas horarias libres y fechas no pasadas en reservas.
+- [ ] **Especificación 4 (Pendiente):** Creación del frontend en la carpeta `/frontend` con HTML, CSS y JavaScript vanilla.
+- [x] **Especificación 5:** Documentación en `AGENTS.md`, `README.md` y bitácora en `DOC.md`.
+- [ ] **Entrega:** Grabación del vídeo explicativo (5-10 minutos) mostrando Postman y frontend.

@@ -140,3 +140,34 @@ Este documento sirve como **bitácora estructurada de desarrollo asistido por IA
   - **Detección de discrepancia de nomenclatura:** El enunciado solicita explícitamente `?capacidad=20` (en español), mientras que en Java el atributo se llama `capacity`. Si un evaluador lanza peticiones con `?capacidad=20`, Spring no habría detectado el parámetro si solo se declaraba `Integer capacity`. Con el soporte dual se garantiza compatibilidad total tanto con las pruebas automáticas o manuales del profesor como con llamadas usando el nombre del atributo.
   - **Aclaración sobre la errata del enunciado:** En el enunciado se menciona como ejemplo `/aulas/21?ordenadores=true` y `/aulas/21?capacidad=20`. Se constata que el `/21` se trata de un desliz tipográfico del redactor del enunciado, ya que consultar una colección de aulas mediante filtros sobre un recurso individual carece de sentido semántico en REST. La implementación sobre `/aulas` con `@RequestParam` realizada por el alumno es la correcta según los estándares de la arquitectura REST.
 
+---
+
+## 📌 Petición 6: Auditoría Global del Proyecto frente al Enunciado y Reestructuración del README
+
+- **Fecha:** 22 de octubre de 2026
+- **Resumen de la Petición:**
+  - Analizar el estado global del proyecto y cotejarlo contra todas las especificaciones del enunciado oficial (`Enunciado.odt`).
+  - Indicar al alumno qué requisitos están completados y qué elementos faltan por implementar.
+  - Corregir discrepancias o fallos técnicos detectados en la lógica de validación de reservas.
+  - Documentar en `README.md` la información técnica, estructurada, clara y legible por humanos, incluyendo las secciones requeridas por el enunciado (decisiones tomadas con IA, problemas encontrados, prompts y errores corregidos).
+- **Cambios Efectuados:**
+  - **[`Reserva.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/entity/Reserva.java):**
+    - Se añadió el método `@PrePersist` para inicializar automáticamente `insertionDate = LocalDateTime.now()` en la propia entidad, dando cumplimiento literal al requisito de la Especificación 1.
+  - **[`ReservaRepository.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/repository/ReservaRepository.java):**
+    - Se sustituyó la consulta con `id` y colección de listas por `existsByAulaAndDateAndFranjasHorariasIn(Aula aula, LocalDate date, Collection<FranjaHoraria> franjasHorarias)`, permitiendo a JPA comprobar solapamientos reales en el aula y fecha seleccionadas.
+  - **[`ReservaService.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/service/ReservaService.java):**
+    - Se limpió la comprobación de fecha nula, fecha anterior a `LocalDate.now()` y solapamiento de franjas horarias sobre el repositorio.
+  - **[`ReservaController.java`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/src/main/java/com/juanbosco/gestionreservas/controller/ReservaController.java):**
+    - Se corrigió el condicional invertido en `POST /reservas` (`if (!reservaService.valida(reserva))` en lugar de `if (reservaService.valida(reserva))`).
+    - Se eliminó la asignación manual de `insertionDate` delegándola en el hook `@PrePersist` de la entidad.
+  - **[`README.md`](file:///run/media/aitorgallegoo_cr/CORSAIR%201TB/Formaci%C3%B3n/Grado%20Superior%20Desarrollo%20de%20Aplicaciones%20Multiplataforma/2%C2%BA%20A%C3%B1o/PDAU/UT1/Practicas/GestionReservas/README.md):**
+    - Se reescribió y sintetizó para ofrecer una documentación limpia, legible por humanos y completa: arquitectura Mermaid, puesta en marcha local, catálogo integral de endpoints con sus códigos HTTP, descripción de las reglas de validación de reservas y la sección obligatoria del apartado 5 (decisiones adoptadas, problemas/errores corregidos y prompts de ejemplo).
+- **Información Relevante y Decisiones Técnicas:**
+  - **Diagnóstico del estado del proyecto frente al enunciado:**
+    - *Especificación 1 (CRUD y códigos HTTP):* Completo. La asignación automática de `insertionDate` ya opera desde la entidad.
+    - *Especificación 2 (Consultas de aulas):* Completo con soporte para `ordenadores` y `capacidad` / `capacity`.
+    - *Especificación 3 (Validaciones de reservas):* Completo y corregido tras solucionar la condición invertida y la consulta de solapamiento.
+    - *Especificación 4 (Frontend):* **Pendiente**. No existe la carpeta `/frontend` en el repositorio; el alumno debe desarrollarla con HTML, CSS y JS vanilla.
+    - *Especificación 5 (Documentación):* Completo (`AGENTS.md`, `README.md` actualizado y `DOC.md` al día).
+
+
